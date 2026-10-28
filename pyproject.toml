@@ -1,0 +1,15 @@
+[project]
+name = "servicepilot"
+version = "0.1.0"
+description = "Active Evidence Orchestration for technical service (BİGGVADİ MVP)"
+requires-python = ">=3.11"
+dependencies = ["fastapi", "uvicorn", "httpx", "python-dotenv"]
+
+[dependency-groups]
+dev = ["pytest"]
+
+[tool.uv]
+package = false
+
+[tool.pytest.ini_options]
+pythonpath = ["."]
