@@ -31,3 +31,8 @@
 ## ADR-7 — Ayar değişiminde çıkarım tekrarlanmaz
 - **Bağlam:** TypeSafe rehberi: ağırlık/eşik değişimi, kanıt değişmediyse yeniden çıkarım gerektirmez.
 - **Karar:** `POST /api/cases/{id}/recompute` son adımın saklı Jev sinyalleriyle RAEP'i yeniden çalıştırır.
+
+## ADR-8 — Premium Koyu Tema Kurumsal SaaS Arayüzü ve Çift Modlu (API + Statik) Çalışma
+- **Bağlam:** Arayüzün hem yerel FastAPI sunucusu (`http://localhost:8000`) hem de GitHub Pages (`/servicepilot/` alt yolu) üzerinde kusursuz çalışması ve teknisyen/uzman iş akışını 10 saniyede net biçimde aktarması gerekiyor.
+- **Karar:** Vanilla HTML/CSS/JS korunarak tasarım dizgesi (`#090D13` zemin, `#0E141C` kenar çubuğu, `#141C26` kartlar, `#40D9C0` kontrollü mint vurgu, Inter + monospace tipografi) uygulandı. İstemci başlangıçta `/api/*` uçlarını kullanır; statik barındırma ortamında (ör. GitHub Pages `/servicepilot/`) API erişilemezse deterministik yerel RAEP motoru ve 5 temsili demo vakasıyla birebir aynı deneyimi sunar.
+- **Sonuç:** Sıfır derleme adımı korunur, tüm mevcut testler ve API sözleşmeleri yaşar, `/servicepilot/` altında kırık varlık veya yönlendirme oluşmaz.

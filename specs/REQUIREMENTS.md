@@ -20,6 +20,12 @@ Her gereksinim bir kabul kriteri (AC) taşır. Kod değişiklikleri bu ID'lere r
 | FR-12 | Demo senaryoları | `GET /api/scenarios` hazır vakaları döner; UI tek tıkla vaka açar ve istenen kanıtın senaryo cevabını doldurabilir. |
 | FR-13 | Offline replay | `POST /api/replay` tüm senaryoları senaryo cevaplarıyla otomatik koşturur ve ServicePilot / Baseline C / Baseline B metriklerini döner: routing doğruluğu (tam + hiyerarşik), otomasyon coverage, kritik recall, ortalama kanıt isteği, ortalama kanıt maliyeti. |
 | FR-14 | KPI paneli | UI vaka sayısı, otomatik route oranı, eskalasyon oranı, ortalama kanıt isteği, ortalama Jev gecikmesi gösterir. |
+| FR-15 | Genel Bakış ekranı | Operasyonel ana ekran 4 canlı gösterge (Açık Vakalar, Kanıt Bekleyen, Uzman İncelemesinde, Yönlendirilmiş), Öncelikli Vakalar listesi ve Son Aktiviteler akışını gerçek uygulama durumundan üretir. |
+| FR-16 | Vaka yönetimi ve filtreleme | Vakalar ekranı metin araması ve durum filtreleri (`Tümü`, `İnceleniyor`, `Kanıt Bekleniyor`, `Uzman Onayında`, `Yönlendirildi`) ile triyaj tablosu sunar. |
+| FR-17 | Yapılandırılmış vaka ve kanıt girişi | Yeni Vaka ekranı 3 bölümde (Araç Bilgileri, Arıza Açıklaması + sökülebilir DTC çipleri, Kanıtlar + fotoğraf önizleme ve ilk ölçümler) doğrulama ve taslak kaydı destekler. |
+| FR-18 | İki sütunlu Vaka Detayı ve Karar Paneli | Sol sütun (%60) vaka özeti, DTC, görseller, geçmiş ve kanıt zaman çizelgesini; sağ sütun (%40) `ServicePilot Analizi` altında önerilen ekip, gerekçe, öncelikli `Eksik Kanıt` kartı (`Kanıt Ekle` aksiyonlu), `Risk ve İnsan Onayı`, duruma bağlı aksiyonlar ve `Karar Geçmişi` denetim izini gösterir. |
+| FR-19 | Uzman İncelemesi ve onay/override | Uzman İncelemesi ekranı eskalasyon nedenini, kritiklik seviyesini ve kanıtları sunar; uzmanın önerilen ekibi onaylamasını veya gerekçe yazarak farklı uzman ekibe yönlendirmesini (`override`) kayıt altına alır. |
+| FR-20 | Temsili demo vakaları ve statik uyumluluk | Sistem ilk açılışta veya sıfırlamada 5 temsili demo vakasını (`Demo Ortamı` etiketli) hazırlar; `/servicepilot/` alt yolu (GitHub Pages) ve yerel FastAPI sunucusu altında eksiksiz çalışır. |
 
 ## Fonksiyonel olmayan gereksinimler
 

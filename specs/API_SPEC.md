@@ -9,15 +9,20 @@ Base: `http://localhost:8000`. JSON in/out. Otomatik OpenAPI: `/docs`.
 {
   "id": "SP-0007",
   "created_at": "2026-10-27T21:00:00Z",
+  "updated_at": "2026-10-27T21:05:00Z",
   "status": "awaiting_evidence | routed | escalated",
+  "review_status": "pending_confirmation | confirmed | pending_review | approved | overridden | null",
   "scenario_id": "lv_starter | null",
-  "vehicle": {"family": "Isuzu NPR 10", "fuel": "diesel | electric", "km": 184000},
+  "vehicle": {"family": "Isuzu NPR 10", "fuel": "diesel | electric", "km": 184000, "vin": "NLNNPR100P0064119", "location": "Kocaeli Gebze Yetkili Servis"},
   "technician_note": "Marşa basınca tık tık ses...",
+  "initial_measurements": "Akü kutup başlarında oksitlenme gözlemlendi.",
   "dtc_codes": ["P0562"],
   "recent_repairs": "",
-  "evidence": [{"id": "battery_voltage", "label": "Akü / şarj voltaj ölçümü", "result": "Kontak kapalı 22.8V", "at": "..."}],
+  "attachments": [{"name": "aku-kutup-basi.jpg", "caption": "Kutup başı oksitlenme görünümü", "data_url": "data:image/svg+xml;..."}],
+  "evidence": [{"id": "battery_voltage", "label": "Akü / şarj voltaj ölçümü", "result": "Kontak kapalı 22.8V", "at": "...", "attachment": null}],
   "pending_evidence": "battery_voltage | null",
   "steps": [Step],
+  "audit": [{"at": "...", "actor": "Sistem (RAEP)", "action": "Kanıt İstendi", "detail": "Akü / şarj voltaj ölçümü talep edildi."}],
   "final": {"action": "ROUTE", "target": "lv_electrical", "target_label": "Düşük Voltaj Elektrik"} 
 }
 ```
@@ -65,9 +70,11 @@ Base: `http://localhost:8000`. JSON in/out. Otomatik OpenAPI: `/docs`.
 | GET | `/api/cases` | — | `Case[]` (yeniden eskiye) | FR-11, FR-14 |
 | POST | `/api/cases` | `{vehicle, technician_note, dtc_codes, recent_repairs, scenario_id?}` | Case (ilk adım çalışmış) | FR-1..7 |
 | GET | `/api/cases/{id}` | — | Case / 404 | — |
-| POST | `/api/cases/{id}/evidence` | `{evidence_id, result}` | Case (yeni adım) / 404 / 409 kapalı vaka | FR-8 |
+| POST | `/api/cases/{id}/evidence` | `{evidence_id, result, attachment?}` | Case (yeni adım) / 404 / 409 kapalı vaka | FR-8, FR-18 |
+| POST | `/api/cases/{id}/review` | `{action: "confirm_route" \| "escalate" \| "approve" \| "override" \| "request_evidence", target?, reason?}` | Case (güncellenmiş inceleme/onay durumu ve denetim izi) | FR-18, FR-19 |
 | POST | `/api/cases/{id}/recompute` | — | Case (son adım güncel ayarlarla yeniden hesaplı) | FR-10 |
-| DELETE | `/api/cases` | — | `{deleted: n}` (demo sıfırlama) | — |
+| DELETE | `/api/cases` | — | `{deleted: n}` (demo sıfırlama ve temsili vakaları yükleme) | FR-20 |
+| POST | `/api/cases/seed` | — | `Case[]` (5 temsili demo vakasını sıfırdan yükler) | FR-20 |
 | GET | `/api/scenarios` | — | `Scenario[]` | FR-12 |
 | POST | `/api/replay` | — | `{settings, systems: {servicepilot, baseline_b, baseline_c}, rows: [...]}` | FR-13 |
 

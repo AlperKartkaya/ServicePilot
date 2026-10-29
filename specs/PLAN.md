@@ -31,6 +31,15 @@ Durum: `[ ]` yapılacak · `[x]` bitti. Her görev gereksinim ID'si taşır.
 - [x] Tüm senaryolar uçtan uca, kritik recall %100
 - [x] README: kurulum + demo akışı
 
+## M5 — Kurumsal Koyu Tema SaaS Arayüz Yeniden Tasarımı
+- [x] Tasarım dizgesi (`#090D13` / `#0E141C` / `#141C26` / `#40D9C0`) ve duyarlı uygulama kabuğu [FR-15, FR-20]
+- [x] Ekran A — Genel Bakış: 4 canlı operasyonel gösterge, Öncelikli Vakalar ve Son Aktiviteler [FR-15]
+- [x] Ekran B — Vakalar: arama, 5 durum filtresi ve duyarlı triyaj tablosu [FR-16]
+- [x] Ekran C — Yeni Vaka: 3 bölümlü yapılandırılmış form, DTC çipleri, fotoğraf önizleme ve taslak kaydı [FR-17]
+- [x] Ekran D — Vaka Detayı (%60/%40): `ServicePilot Analizi` karar paneli, `Eksik Kanıt` kartı, `Kanıt Ekle` diyaloğu ve `Karar Geçmişi` [FR-18]
+- [x] Ekran E — Uzman İncelemesi: onay/override akışı, uzman kuyrukları ve RAEP politika/simülasyon görünümü [FR-19]
+- [x] 5 temsili demo vakası tohumlama ve `/servicepilot/` alt yolu (GitHub Pages + FastAPI) uyumluluğu [FR-20]
+
 ## Sonraki faz (MVP dışı)
 - Fotoğraf kanıtı (shadow-mode multimodal)
 - Gerçek kapalı vaka verisiyle `informs`/`ρ`/maliyet kalibrasyonu

@@ -85,3 +85,26 @@ def test_no_confident_node_escalates():
     d = decide(case(), signals(route(engine=0.34, brakes=0.33, lv_electrical=0.33), sufficient=0.1),
                {**S, "max_requests": 0})
     assert d["action"] == "ESCALATE"
+
+
+def test_demo_cases_cover_all_five_mvp_scenarios():
+    from app.scenarios import build_demo_cases
+    demos = build_demo_cases(decide, S)
+    assert len(demos) == 5
+    by_id = {c["id"]: c for c in demos}
+    # SP-0001: technical measurement request (can_resistance)
+    assert by_id["SP-0001"]["status"] == "awaiting_evidence"
+    assert by_id["SP-0001"]["pending_evidence"] == "can_resistance"
+    # SP-0002: photo evidence request (connector_photo)
+    assert by_id["SP-0002"]["status"] == "awaiting_evidence"
+    assert by_id["SP-0002"]["pending_evidence"] == "connector_photo"
+    # SP-0003: safety-critical escalation
+    assert by_id["SP-0003"]["status"] == "escalated"
+    assert by_id["SP-0003"]["review_status"] == "pending_review"
+    # SP-0004: sufficient evidence, ready for routing confirmation
+    assert by_id["SP-0004"]["status"] == "routed"
+    assert by_id["SP-0004"]["review_status"] == "pending_confirmation"
+    # SP-0005: already routed & confirmed to specialist
+    assert by_id["SP-0005"]["status"] == "routed"
+    assert by_id["SP-0005"]["review_status"] == "confirmed"
+

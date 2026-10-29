@@ -9,7 +9,7 @@ HAS_THRESHOLD = 0.7  # Jev `has_<id>` above this = evidence already present in f
 
 
 def case_text(case):
-    parts = [case.get("technician_note", ""), case.get("recent_repairs", ""), " ".join(case.get("dtc_codes", []))]
+    parts = [case.get("technician_note", ""), case.get("initial_measurements", ""), case.get("recent_repairs", ""), " ".join(case.get("dtc_codes", []))]
     parts += [e["result"] for e in case.get("evidence", [])]
     return " ".join(parts).lower()
 

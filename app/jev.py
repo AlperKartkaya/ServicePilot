@@ -21,13 +21,16 @@ PRIORITY_LEVELS = [
 
 
 def build_state(case):
-    return {
+    st = {
         "vehicle": case["vehicle"],
         "technician_note": case["technician_note"],
         "dtc_codes": case.get("dtc_codes", []),
         "recent_repairs": case.get("recent_repairs", ""),
         "collected_evidence": [{"evidence": EVIDENCE[e["id"]]["desc"], "result": e["result"]} for e in case.get("evidence", [])],
     }
+    if case.get("initial_measurements"):
+        st["initial_measurements"] = case["initial_measurements"]
+    return st
 
 
 def build_questions():
