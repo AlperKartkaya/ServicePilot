@@ -70,9 +70,9 @@ Base: `http://localhost:8000`. JSON in/out. Otomatik OpenAPI: `/docs`.
 | GET | `/api/cases` | — | `Case[]` (yeniden eskiye) | FR-11, FR-14 |
 | POST | `/api/cases` | `{vehicle, technician_note, dtc_codes, recent_repairs, scenario_id?}` | Case (ilk adım çalışmış) | FR-1..7 |
 | GET | `/api/cases/{id}` | — | Case / 404 | — |
-| POST | `/api/cases/{id}/evidence` | `{evidence_id, result, attachment?}` | Case (yeni adım) / 404 / 409 kapalı vaka | FR-8, FR-18 |
-| POST | `/api/cases/{id}/review` | `{action: "confirm_route" \| "escalate" \| "approve" \| "override" \| "request_evidence", target?, reason?}` | Case (güncellenmiş inceleme/onay durumu ve denetim izi) | FR-18, FR-19 |
-| POST | `/api/cases/{id}/recompute` | — | Case (son adım güncel ayarlarla yeniden hesaplı) | FR-10 |
+| POST | `/api/cases/{id}/evidence` | `{evidence_id, result, attachment?}` | Case (yeni adım) / 404 / 409 kapalı vaka / 422 uyumsuz kanıt | FR-8, FR-18, FR-19 |
+| POST | `/api/cases/{id}/review` | `{action: "confirm_route" \| "escalate" \| "approve" \| "override" \| "request_evidence", target?, reason?, evidence_id?}` | Case / 409 geçersiz durum geçişi / 422 eksik hedef-gerekçe veya tehlikeli test | FR-18, FR-19 |
+| POST | `/api/cases/{id}/recompute` | — | Case (yeni adım eklenir; insan onaylı `final` korunur, makine önerisi `machine_recommendation` alanında güncellenir) | FR-10, FR-19 |
 | DELETE | `/api/cases` | — | `{deleted: n}` (demo sıfırlama ve temsili vakaları yükleme) | FR-20 |
 | POST | `/api/cases/seed` | — | `Case[]` (5 temsili demo vakasını sıfırdan yükler) | FR-20 |
 | GET | `/api/scenarios` | — | `Scenario[]` | FR-12 |

@@ -3,7 +3,7 @@
 Input: a case dict, Jev `signals` (or None on Jev failure) and policy settings.
 Output: a decision dict with action ROUTE | REQUEST_EVIDENCE | ESCALATE plus everything the UI explains.
 """
-from .catalog import EVIDENCE, ESCALATE_TARGET, LEAVES, NODES, SAFETY_RULES, ancestors, label, leaves_under
+from .catalog import DEFAULT_SETTINGS, EVIDENCE, ESCALATE_TARGET, LEAVES, NODES, SAFETY_RULES, ancestors, label, leaves_under
 
 HAS_THRESHOLD = 0.7  # Jev `has_<id>` above this = evidence already present in free text
 
@@ -17,6 +17,32 @@ def case_text(case):
 def safety_hits(case):
     text = case_text(case)
     return [r for r in SAFETY_RULES if r in text]
+
+
+def is_critical_case(case, s=None):
+    """True when deterministic safety rules hit or any step exceeded critical threshold."""
+    if safety_hits(case):
+        return True
+    tau = (s or DEFAULT_SETTINGS).get("tau_crit", DEFAULT_SETTINGS["tau_crit"])
+    for st in case.get("steps", []):
+        if (st.get("decision") or {}).get("safety_hits"):
+            return True
+        sig = st.get("signals") or {}
+        if (sig.get("critical") or 0) >= tau:
+            return True
+    return False
+
+
+def validate_evidence_for_case(case, eid, s=None):
+    """Validate evidence ID, vehicle compatibility, and safety-critical field-test restrictions."""
+    if eid not in EVIDENCE:
+        return "Bilinmeyen kanıt türü (unknown evidence_id)."
+    ev = EVIDENCE[eid]
+    if ev.get("requires_ev") and case.get("vehicle", {}).get("fuel") != "electric":
+        return "Bu kanıt yalnızca elektrikli (HV) araçlar için geçerlidir."
+    if is_critical_case(case, s) and ev.get("S", 0) > 0:
+        return "Güvenlik kritik vakada tehlikeli saha testi istenemez; yalnızca güvenli dokümantasyon/görsel kayıt eklenebilir."
+    return None
 
 
 def normalize(route):
@@ -50,12 +76,15 @@ def evidence_cost(ev, s):
 
 def candidates(case, signals, s, route, loss_weight, err):
     collected = {e["id"] for e in case.get("evidence", [])}
+    unavailable = set(case.get("unavailable_evidence", []))
     has = signals.get("has", {})
     electric = case.get("vehicle", {}).get("fuel") == "electric"
     out, skipped = [], {}
     for eid, ev in EVIDENCE.items():
         if eid in collected:
             skipped[eid] = "toplandı"
+        elif eid in unavailable:
+            skipped[eid] = "senaryoda yanıtı yok"
         elif ev.get("requires_ev") and not electric:
             skipped[eid] = "araca uygun değil"
         elif eid == "dtc_scan" and case.get("dtc_codes"):

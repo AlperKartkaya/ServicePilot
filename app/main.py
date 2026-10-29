@@ -1,73 +1,94 @@
 """ServicePilot HTTP API (specs/API_SPEC.md) + static UI."""
 import asyncio
+import os
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Literal
+from typing import Annotated, Literal
 
 import httpx
 from dotenv import load_dotenv
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Query
 from fastapi.staticfiles import StaticFiles
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, StrictInt, StringConstraints, field_validator
 
 from . import jev, raep, store
 from .catalog import DEFAULT_SETTINGS, ESCALATE_TARGET, EVIDENCE, LEAVES, NODES, ancestors, label, leaves_under
-from .scenarios import NO_FINDING, SCENARIOS, build_demo_cases
+from .scenarios import SCENARIOS, build_demo_cases, fixture_signals_for
 
 load_dotenv()
 app = FastAPI(title="ServicePilot", version="0.1.0")
-client = httpx.AsyncClient()
 STATUS = {"ROUTE": "routed", "ESCALATE": "escalated", "REQUEST_EVIDENCE": "awaiting_evidence"}
+
+TrimStr = Annotated[str, StringConstraints(strip_whitespace=True)]
 
 
 class Vehicle(BaseModel):
-    family: str = Field(min_length=1, max_length=80)
+    family: Annotated[str, StringConstraints(strip_whitespace=True, min_length=2, max_length=80)]
     fuel: Literal["diesel", "electric"]
-    km: int = Field(ge=0, le=5_000_000)
-    vin: str = Field(default="", max_length=40)
-    location: str = Field(default="", max_length=120)
+    km: StrictInt = Field(ge=0, le=5_000_000)
+    vin: Annotated[str, StringConstraints(strip_whitespace=True, max_length=24)] = ""
+    location: Annotated[str, StringConstraints(strip_whitespace=True, max_length=120)] = ""
 
 
 class AttachmentIn(BaseModel):
-    name: str = Field(min_length=1, max_length=160)
-    caption: str = Field(default="", max_length=300)
-    data_url: str = Field(default="", max_length=2_000_000)
+    name: Annotated[str, StringConstraints(strip_whitespace=True, min_length=1, max_length=160)]
+    caption: Annotated[str, StringConstraints(strip_whitespace=True, max_length=300)] = ""
+    data_url: str = Field(default="", max_length=750_000)
+
+    @field_validator("data_url")
+    @classmethod
+    def check_data_url(cls, v: str) -> str:
+        if v and not v.startswith("data:image/"):
+            raise ValueError("Yalnızca image/* veri URI formatı desteklenir.")
+        return v
 
 
 class CaseIn(BaseModel):
     vehicle: Vehicle
-    technician_note: str = Field(min_length=3, max_length=4000)
-    initial_measurements: str = Field(default="", max_length=2000)
-    dtc_codes: list[str] = Field(default=[], max_length=30)
-    recent_repairs: str = Field(default="", max_length=2000)
-    attachments: list[AttachmentIn] = Field(default=[], max_length=10)
+    technician_note: Annotated[str, StringConstraints(strip_whitespace=True, min_length=5, max_length=4000)]
+    initial_measurements: Annotated[str, StringConstraints(strip_whitespace=True, max_length=2000)] = ""
+    dtc_codes: list[str] = Field(default=[], max_length=20)
+    recent_repairs: Annotated[str, StringConstraints(strip_whitespace=True, max_length=2000)] = ""
+    attachments: list[AttachmentIn] = Field(default=[], max_length=4)
     scenario_id: str | None = None
+
+    @field_validator("dtc_codes")
+    @classmethod
+    def clean_dtcs(cls, codes: list[str]) -> list[str]:
+        out = []
+        for c in codes:
+            cleaned = c.strip().upper()
+            if cleaned and cleaned not in out:
+                if len(cleaned) > 16:
+                    raise ValueError("DTC kodu en fazla 16 karakter olabilir.")
+                out.append(cleaned)
+        return out[:20]
 
 
 class EvidenceIn(BaseModel):
-    evidence_id: str
-    result: str = Field(min_length=1, max_length=2000)
+    evidence_id: Annotated[str, StringConstraints(strip_whitespace=True, min_length=1, max_length=64)]
+    result: Annotated[str, StringConstraints(strip_whitespace=True, min_length=2, max_length=2000)]
     attachment: AttachmentIn | None = None
 
 
 class ReviewIn(BaseModel):
     action: Literal["confirm_route", "escalate", "approve", "override", "request_evidence"]
     target: str | None = None
-    reason: str = Field(default="", max_length=1000)
+    reason: Annotated[str, StringConstraints(strip_whitespace=True, max_length=1000)] = ""
     evidence_id: str | None = None
 
 
 class SettingsIn(BaseModel):
-    tau_route: float | None = Field(None, ge=0, le=1)
-    tau_suff: float | None = Field(None, ge=0, le=1)
-    tau_crit: float | None = Field(None, ge=0, le=1)
+    tau_route: float | None = Field(None, ge=0.5, le=0.99)
+    tau_suff: float | None = Field(None, ge=0.0, le=1.0)
+    tau_crit: float | None = Field(None, ge=0.1, le=0.99)
     # `lambda` is a Python keyword, hence the alias.
-    lambda_: float | None = Field(None, ge=0, le=10, alias="lambda")
-    alpha: float | None = Field(None, ge=0, le=1)
-    beta: float | None = Field(None, ge=0, le=1)
-    gamma: float | None = Field(None, ge=0, le=1)
-    w_crit: float | None = Field(None, ge=0, le=20)
-    max_requests: int | None = Field(None, ge=0, le=10)
+    lambda_: float | None = Field(None, ge=0.0, le=3.0, alias="lambda")
+    alpha: float | None = Field(None, ge=0.0, le=0.05)
+    beta: float | None = Field(None, ge=0.0, le=0.2)
+    gamma: float | None = Field(None, ge=0.0, le=0.5)
+    w_crit: float | None = Field(None, ge=0.0, le=10.0)
+    max_requests: StrictInt | None = Field(None, ge=0, le=8)
 
 
 def now():
@@ -90,22 +111,73 @@ def new_case(data: dict, cid: str):
         "audit": [{"at": ts, "actor": f"Teknisyen ({loc})", "action": "Vaka Oluşturuldu",
                    "detail": "Servis vakası ve başlangıç bilgileri kaydedildi."}],
         "final": None,
+        "machine_recommendation": None,
     }
 
 
-def apply(case, signals, latency_ms, s):
+def apply(case, signals, latency_ms, s, recomputed: bool = False):
     ts = now()
+    was_critical = raep.is_critical_case(case, s) or (
+        case.get("status") == "escalated" and case.get("review_status") == "pending_review"
+    )
+    human_locked = case.get("review_status") in ("confirmed", "approved", "overridden") and case.get("final")
+
     d = raep.decide(case, signals, s)
-    step = {"at": ts, "latency_ms": latency_ms, "signals": signals, "decision": d}
+    step = {
+        "at": ts,
+        "latency_ms": latency_ms,
+        "signals": signals,
+        "settings": dict(s),
+        "decision": d,
+    }
+    if recomputed:
+        step["recomputed"] = True
     case["steps"].append(step)
     case["updated_at"] = ts
+    case["machine_recommendation"] = {
+        "action": d["action"],
+        "target": d["target"],
+        "target_label": d["target_label"],
+        "evidence_id": d["evidence_id"],
+        "reason": d["reason"],
+        "at": ts,
+    }
+
+    # Preserve human-confirmed/approved/overridden assignment on recompute (P1 decision integrity).
+    if recomputed and human_locked:
+        rec_lbl = (
+            EVIDENCE.get(d["evidence_id"], {}).get("label", d["evidence_id"])
+            if d["action"] == "REQUEST_EVIDENCE"
+            else d["target_label"]
+        )
+        case.setdefault("audit", []).append({
+            "at": ts,
+            "actor": "ServicePilot (RAEP)",
+            "action": "Politika Yeniden Hesaplandı (İnsan Kararı Korundu)",
+            "detail": f"Mevcut yönlendirme ({case['final']['target_label']}) korundu; güncel politika önerisi: {d['action']} ({rec_lbl}).",
+        })
+        return case
+
+    # Preserve safety escalation if the case was already in critical escalation and unreviewed.
+    if was_critical and d["action"] != "ESCALATE" and not human_locked:
+        case["status"] = "escalated"
+        case["review_status"] = "pending_review"
+        case["final"] = {"action": "ESCALATE", "target": ESCALATE_TARGET, "target_label": label(ESCALATE_TARGET)}
+        case.setdefault("audit", []).append({
+            "at": ts,
+            "actor": "ServicePilot (RAEP)",
+            "action": "Kritik Eskalasyon Korundu",
+            "detail": f"Güvenlik eskalasyonu uzman incelemesi tamamlanana kadar korundu. ({d['reason']})",
+        })
+        return case
+
     case["status"] = STATUS[d["action"]]
     case["pending_evidence"] = d["evidence_id"]
     if d["action"] == "ESCALATE":
         case["review_status"] = "pending_review"
         act_label = "Uzman İncelemesine Eskale Edildi"
     elif d["action"] == "ROUTE":
-        if case.get("review_status") not in ("confirmed", "approved", "overridden"):
+        if not human_locked:
             case["review_status"] = "pending_confirmation"
         act_label = f"Yönlendirme Önerildi: {d['target_label']}"
     else:
@@ -121,7 +193,11 @@ def apply(case, signals, latency_ms, s):
 
 async def run_step(case, s):
     # Safety gate runs before Jev (ARCHITECTURE §2): no model call when a deterministic rule fires.
-    signals, ms = (None, 0) if raep.safety_hits(case) else await jev.ask(case, client)
+    if raep.safety_hits(case):
+        signals, ms = None, 0
+    else:
+        async with httpx.AsyncClient() as http_client:
+            signals, ms = await jev.ask(case, http_client)
     return apply(case, signals, ms, s)
 
 
@@ -189,21 +265,54 @@ def get_case(cid: str):
 @app.post("/api/cases/{cid}/evidence")
 async def add_evidence(cid: str, body: EvidenceIn):
     case = load(cid)
-    if case["status"] != "awaiting_evidence":
+    s = store.get_settings()
+    if case.get("review_status") in ("confirmed", "approved", "overridden"):
         raise HTTPException(409, "case closed")
-    if body.evidence_id not in EVIDENCE:
-        raise HTTPException(422, "unknown evidence_id")
+    is_crit_doc = case["status"] == "escalated" and case.get("review_status") == "pending_review"
+    if case["status"] != "awaiting_evidence" and not is_crit_doc:
+        raise HTTPException(409, "case closed")
+
+    err = raep.validate_evidence_for_case(case, body.evidence_id, s)
+    if err:
+        raise HTTPException(422, err)
+
     ts = now()
     att = body.attachment.model_dump() if body.attachment else None
     if att:
+        if len(case.get("attachments", [])) >= 8:
+            raise HTTPException(422, "Vaka başına en fazla 8 görsel eklenebilir.")
         case.setdefault("attachments", []).append(att)
+
     ev_label = EVIDENCE[body.evidence_id]["label"]
-    case["evidence"].append({"id": body.evidence_id, "label": ev_label,
-                             "result": body.result.strip(), "at": ts, "attachment": att})
+    case["evidence"].append({
+        "id": body.evidence_id,
+        "label": ev_label,
+        "result": body.result.strip(),
+        "at": ts,
+        "attachment": att,
+    })
     case.setdefault("audit", []).append({
         "at": ts, "actor": "Teknisyen", "action": f"Kanıt Eklendi: {ev_label}", "detail": body.result.strip()
     })
-    case = await run_step(case, store.get_settings())
+
+    if is_crit_doc or raep.is_critical_case(case, s):
+        # Critical case retains its safety escalation while attaching safe documentation.
+        case["status"] = "escalated"
+        case["review_status"] = "pending_review"
+        if case.get("pending_evidence") == body.evidence_id:
+            case["pending_evidence"] = None
+        case["final"] = {"action": "ESCALATE", "target": ESCALATE_TARGET, "target_label": label(ESCALATE_TARGET)}
+        case["updated_at"] = ts
+        case.setdefault("audit", []).append({
+            "at": ts,
+            "actor": "ServicePilot (Safety Gate)",
+            "action": "Doküman Eklendi · Eskalasyon Korundu",
+            "detail": "Güvenlik kritik vakada eklenen bilgi uzman incelemesi için kaydedildi; otomatik yönlendirme kapalıdır.",
+        })
+        store.save_case(case)
+        return case
+
+    case = await run_step(case, s)
     store.save_case(case)
     return case
 
@@ -211,48 +320,74 @@ async def add_evidence(cid: str, body: EvidenceIn):
 @app.post("/api/cases/{cid}/review")
 def review_case(cid: str, body: ReviewIn):
     case = load(cid)
+    s = store.get_settings()
     ts = now()
     last_dec = case["steps"][-1]["decision"] if case.get("steps") else {}
-    best_target = body.target or last_dec.get("target") or last_dec.get("baseline_one_shot") or "lv_electrical"
-    if best_target == ESCALATE_TARGET:
-        best_target = last_dec.get("baseline_one_shot") or "lv_electrical"
-    if best_target not in NODES and best_target != ESCALATE_TARGET:
-        raise HTTPException(422, "invalid target specialist")
+    crit = raep.is_critical_case(case, s)
 
     if body.action == "confirm_route":
-        t_label = label(best_target)
+        if case["status"] == "awaiting_evidence":
+            raise HTTPException(
+                409,
+                "Kanıt bekleyen vakada doğrudan normal onay verilemez; önce kanıt tamamlanmalı veya gerekçeli uzman yönlendirmesi (override) yapılmalıdır.",
+            )
+        if case["status"] == "escalated" or crit:
+            raise HTTPException(
+                409,
+                "Kritik veya eskale edilmiş vakada normal onay kullanılamaz; hedef ekip ve gerekçe ile uzman incelemesi gereklidir.",
+            )
+        proposed = last_dec.get("target") if last_dec.get("action") == "ROUTE" else (case.get("final") or {}).get("target")
+        if not proposed or proposed not in NODES:
+            raise HTTPException(422, "Onaylanacak geçerli bir makine yönlendirme önerisi bulunmuyor.")
+        if body.target and body.target != proposed:
+            raise HTTPException(422, "Önerilen ekipten farklı bir hedef seçmek için gerekçeli override aksiyonunu kullanın.")
+        t_label = label(proposed)
         case["status"] = "routed"
         case["review_status"] = "confirmed"
         case["pending_evidence"] = None
-        case["final"] = {"action": "ROUTE", "target": best_target, "target_label": t_label}
+        case["final"] = {"action": "ROUTE", "target": proposed, "target_label": t_label}
         case.setdefault("audit", []).append({
             "at": ts, "actor": "Servis Sorumlusu", "action": "Yönlendirme Onaylandı",
-            "detail": body.reason.strip() or f"Vaka '{t_label}' uzman ekibine yönlendirildi."
+            "detail": body.reason or f"Önerilen '{t_label}' yönlendirmesi onaylanarak kaydedildi.",
         })
-    elif body.action == "escalate":
-        case["status"] = "escalated"
-        case["review_status"] = "pending_review"
-        case["pending_evidence"] = None
-        case["final"] = {"action": "ESCALATE", "target": ESCALATE_TARGET, "target_label": label(ESCALATE_TARGET)}
-        case.setdefault("audit", []).append({
-            "at": ts, "actor": "Servis Sorumlusu", "action": "Uzman İncelemesine Gönderildi",
-            "detail": body.reason.strip() or "Vaka insan uzman değerlendirmesi için ProEye masasına aktarıldı."
-        })
+
     elif body.action == "approve":
-        t_label = label(best_target)
+        if case["status"] == "awaiting_evidence":
+            raise HTTPException(
+                409,
+                "Kanıt bekleyen vakada doğrudan onay verilemez; gerekçeli uzman override işlemi kullanılmalıdır.",
+            )
+        proposed = last_dec.get("target") if last_dec.get("action") == "ROUTE" and last_dec.get("target") in NODES else None
+        if proposed is None:
+            # Escalated / uncertain case has NO proposed specialist route; never invent lv_electrical!
+            if not body.target or body.target not in NODES:
+                raise HTTPException(
+                    422,
+                    "Eskale edilmiş vakada otomatik uzmanlık önerisi yoktur; geçerli bir hedef uzman ekip seçilmelidir.",
+                )
+            if crit and len(body.reason) < 3:
+                raise HTTPException(422, "Kritik vaka yönlendirmesinde uzman gerekçesi (en az 3 karakter) zorunludur.")
+            chosen = body.target
+        else:
+            if body.target and body.target != proposed:
+                raise HTTPException(422, "Önerilen ekipten farklı bir hedef için override aksiyonunu kullanın.")
+            chosen = proposed
+
+        t_label = label(chosen)
         case["status"] = "routed"
         case["review_status"] = "approved"
         case["pending_evidence"] = None
-        case["final"] = {"action": "ROUTE", "target": best_target, "target_label": t_label}
+        case["final"] = {"action": "ROUTE", "target": chosen, "target_label": t_label}
         case.setdefault("audit", []).append({
-            "at": ts, "actor": "Merkez Uzman", "action": "Uzman Onayı Verildi",
-            "detail": body.reason.strip() or f"Önerilen '{t_label}' yönlendirmesi uzman tarafından onaylandı."
+            "at": ts, "actor": "Merkez Uzman", "action": f"Uzman Onayı Verildi → {t_label}",
+            "detail": body.reason or f"'{t_label}' uzman ekibine yönlendirme onaylandı.",
         })
+
     elif body.action == "override":
-        if not body.reason.strip():
-            raise HTTPException(422, "override requires a reason")
-        if not body.target or (body.target not in NODES and body.target != ESCALATE_TARGET):
-            raise HTTPException(422, "override requires valid target")
+        if len(body.reason) < 3:
+            raise HTTPException(422, "Yönlendirme değişikliği (override) için geçerli bir gerekçe zorunludur.")
+        if not body.target or body.target not in NODES:
+            raise HTTPException(422, "Geçerli bir hedef uzman ekip (target) seçilmelidir.")
         t_label = label(body.target)
         case["status"] = "routed"
         case["review_status"] = "overridden"
@@ -260,24 +395,57 @@ def review_case(cid: str, body: ReviewIn):
         case["final"] = {"action": "ROUTE", "target": body.target, "target_label": t_label}
         case.setdefault("audit", []).append({
             "at": ts, "actor": "Merkez Uzman", "action": f"Yönlendirme Değiştirildi → {t_label}",
-            "detail": f"Gerekçe: {body.reason.strip()}"
+            "detail": f"Gerekçe: {body.reason}",
         })
-    elif body.action == "request_evidence":
-        ev_id = body.evidence_id or last_dec.get("evidence_id") or (last_dec.get("candidates") or [{}])[0].get("id") or "connector_photo"
-        if ev_id not in EVIDENCE:
-            raise HTTPException(422, "unknown evidence_id")
-        ev_label = EVIDENCE[ev_id]["label"]
-        case["status"] = "awaiting_evidence"
-        case["review_status"] = None
-        case["pending_evidence"] = ev_id
-        case["final"] = None
-        if case.get("steps"):
-            case["steps"][-1]["decision"]["action"] = "REQUEST_EVIDENCE"
-            case["steps"][-1]["decision"]["evidence_id"] = ev_id
+
+    elif body.action == "escalate":
+        case["status"] = "escalated"
+        case["review_status"] = "pending_review"
+        case["pending_evidence"] = None
+        case["final"] = {"action": "ESCALATE", "target": ESCALATE_TARGET, "target_label": label(ESCALATE_TARGET)}
         case.setdefault("audit", []).append({
-            "at": ts, "actor": "Servis Sorumlusu", "action": f"Ek Kanıt İstendi: {ev_label}",
-            "detail": body.reason.strip() or f"Teknisyenden '{ev_label}' bilgisinin tamamlanması talep edildi."
+            "at": ts, "actor": "Servis Sorumlusu", "action": "Uzman İncelemesine Alındı",
+            "detail": body.reason or "Vaka uzman inceleme kuyruğuna alındı (ProEye etiketi kaydedildi).",
         })
+
+    elif body.action == "request_evidence":
+        if case.get("review_status") in ("confirmed", "approved", "overridden"):
+            raise HTTPException(409, "Onaylanmış/kapatılmış vakada kanıt talebi açılamaz.")
+        ev_id = (
+            body.evidence_id
+            or case.get("pending_evidence")
+            or last_dec.get("evidence_id")
+            or (last_dec.get("candidates") or [{}])[0].get("id")
+        )
+        if not ev_id:
+            raise HTTPException(422, "İstenecek kanıt türü (evidence_id) belirtilmelidir.")
+        err = raep.validate_evidence_for_case(case, ev_id, s)
+        if err:
+            raise HTTPException(422, err)
+        ev_label = EVIDENCE[ev_id]["label"]
+        case["pending_evidence"] = ev_id
+        # Do NOT mutate historical step decisions, and do NOT remove critical cases from expert review!
+        if crit or case["status"] == "escalated":
+            case["status"] = "escalated"
+            case["review_status"] = "pending_review"
+            case["final"] = {"action": "ESCALATE", "target": ESCALATE_TARGET, "target_label": label(ESCALATE_TARGET)}
+            case.setdefault("audit", []).append({
+                "at": ts,
+                "actor": "Merkez Uzman",
+                "action": f"Güvenli Doküman Talebi Kaydedildi: {ev_label}",
+                "detail": body.reason or f"Kritik eskalasyon korunarak '{ev_label}' bilgisi talep edildi.",
+            })
+        else:
+            case["status"] = "awaiting_evidence"
+            case["review_status"] = None
+            case["final"] = None
+            case.setdefault("audit", []).append({
+                "at": ts,
+                "actor": "Servis Sorumlusu",
+                "action": f"Kanıt Talebi Kaydedildi: {ev_label}",
+                "detail": body.reason or f"'{ev_label}' talebi vaka kaydına işlendi.",
+            })
+
     case["updated_at"] = ts
     store.save_case(case)
     return case
@@ -285,11 +453,12 @@ def review_case(cid: str, body: ReviewIn):
 
 @app.post("/api/cases/{cid}/recompute")
 def recompute(cid: str):
-    """Re-run RAEP on the last stored Jev signals with current settings (ADR-7). No Jev call."""
+    """Re-run RAEP on the last stored Jev signals with current settings (ADR-7). Appends step, never pops history."""
     case = load(cid)
-    last = case["steps"].pop()
-    case = apply(case, last["signals"], last["latency_ms"], store.get_settings())
-    case["steps"][-1]["recomputed"] = True
+    if not case.get("steps"):
+        raise HTTPException(409, "Yeniden hesaplanacak karar adımı bulunmuyor.")
+    last_with_sig = next((st for st in reversed(case["steps"]) if st.get("signals") is not None), case["steps"][-1])
+    case = apply(case, last_with_sig.get("signals"), 0, store.get_settings(), recomputed=True)
     store.save_case(case)
     return case
 
@@ -307,32 +476,61 @@ def score(expected, action, target):
     return exact, hier
 
 
-def answer(sc, eid):
-    return {"id": eid, "label": EVIDENCE[eid]["label"], "result": sc["answers"].get(eid, NO_FINDING), "at": now()}
+async def replay_signals(case, sc, use_fixtures: bool):
+    if raep.safety_hits(case):
+        return None, 0
+    if use_fixtures or not os.environ.get("TYPESAFE_API_KEY"):
+        return fixture_signals_for(sc, case), 0
+    async with httpx.AsyncClient() as http_client:
+        return await jev.ask(case, http_client)
 
 
-async def replay_one(sc, s):
-    # ServicePilot: Jev + RAEP loop with simulated technician answers.
+async def replay_one(sc, s, use_fixtures: bool = False):
+    # ServicePilot: Jev + RAEP loop with scenario answers. Missing answers stay missing (never invent NO_FINDING).
     case = new_case(sc, sc["id"])
-    while (await run_step(case, s))["status"] == "awaiting_evidence":
-        case["evidence"].append(answer(sc, case["pending_evidence"]))
+    while True:
+        sig, ms = await replay_signals(case, sc, use_fixtures)
+        apply(case, sig, ms, s)
+        if case["status"] != "awaiting_evidence":
+            break
+        eid = case["pending_evidence"]
+        if eid and eid in sc.get("answers", {}):
+            case["evidence"].append({"id": eid, "label": EVIDENCE[eid]["label"], "result": sc["answers"][eid], "at": now()})
+        else:
+            # Answer not available in scenario fixture -> mark unavailable and re-evaluate without fabricating findings.
+            case.setdefault("unavailable_evidence", []).append(eid)
+            if len(case["unavailable_evidence"]) > len(EVIDENCE):
+                break
     sp_cost = sum(raep.evidence_cost(EVIDENCE[e["id"]], s) for e in case["evidence"])
 
     # Baseline C: Jev one-shot argmax on the initial state, no gate, no evidence.
-    sig, _ = await jev.ask(new_case(sc, sc["id"]), client)
-    c_target = max(sig["route"], key=sig["route"].get) if sig else None
+    init_case = new_case(sc, sc["id"])
+    if use_fixtures or not os.environ.get("TYPESAFE_API_KEY"):
+        sig_c = fixture_signals_for(sc, init_case)
+    else:
+        async with httpx.AsyncClient() as http_client:
+            sig_c = (await jev.ask(init_case, http_client))[0]
+    c_target = max(sig_c["route"], key=sig_c["route"].get) if sig_c else None
 
-    # Baseline B: fixed checklist = every applicable evidence of the one-shot top group, then Jev argmax.
+    # Baseline B: fixed checklist = applicable available evidence of the one-shot top group, then argmax.
     b_case = new_case(sc, sc["id"])
     b_target = None
     if c_target:
         group = (ancestors(c_target) or [c_target])[-1]
         group_leaves = set(leaves_under(group))
-        b_case["evidence"] = [answer(sc, eid) for eid, ev in EVIDENCE.items()
-                              if group_leaves & set(ev["informs"])
-                              and not (ev.get("requires_ev") and sc["vehicle"]["fuel"] != "electric")
-                              and not (eid == "dtc_scan" and sc["dtc_codes"])]
-        sig_b, _ = await jev.ask(b_case, client)
+        b_case["evidence"] = [
+            {"id": eid, "label": EVIDENCE[eid]["label"], "result": sc["answers"][eid], "at": now()}
+            for eid, ev in EVIDENCE.items()
+            if eid in sc.get("answers", {})
+            and (group_leaves & set(ev["informs"]))
+            and not (ev.get("requires_ev") and sc["vehicle"]["fuel"] != "electric")
+            and not (eid == "dtc_scan" and sc["dtc_codes"])
+        ]
+        if use_fixtures or not os.environ.get("TYPESAFE_API_KEY"):
+            sig_b = fixture_signals_for(sc, b_case)
+        else:
+            async with httpx.AsyncClient() as http_client:
+                sig_b = (await jev.ask(b_case, http_client))[0]
         b_target = max(sig_b["route"], key=sig_b["route"].get) if sig_b else None
     b_cost = sum(raep.evidence_cost(EVIDENCE[e["id"]], s) for e in b_case["evidence"])
 
@@ -372,11 +570,16 @@ def metrics(rows, key):
 
 
 @app.post("/api/replay")
-async def replay():
+async def replay(fixture: bool = Query(default=True)):
     s = store.get_settings()
-    rows = await asyncio.gather(*(replay_one(sc, s) for sc in SCENARIOS))
-    return {"settings": s, "rows": rows,
-            "systems": {k: metrics(rows, k) for k in ("servicepilot", "baseline_b", "baseline_c")}}
+    use_fx = fixture or not bool(os.environ.get("TYPESAFE_API_KEY"))
+    rows = await asyncio.gather(*(replay_one(sc, s, use_fixtures=use_fx) for sc in SCENARIOS))
+    return {
+        "settings": s,
+        "signal_source": "fixture" if use_fx else "live_jev",
+        "rows": rows,
+        "systems": {k: metrics(rows, k) for k in ("servicepilot", "baseline_b", "baseline_c")},
+    }
 
 
 static_dir = Path(__file__).resolve().parent.parent / "static"

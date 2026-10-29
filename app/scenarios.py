@@ -12,13 +12,27 @@ SCENARIOS = [
      "technician_note": "Sabah marşa basınca sadece tık tık ses geliyor, motor dönmüyor. Gösterge ışıkları sönük yanıyor.",
      "dtc_codes": [], "recent_repairs": "", "expected": "lv_electrical",
      "answers": {"battery_voltage": "Kontak kapalı 21.4V, marş anında 14.8V'a düşüyor. Akü kutup başları oksitli.",
-                 "connector_photo": "Akü kutup başlarında beyaz oksitlenme var, şase kablosu gevşek."}},
+                 "connector_photo": "Akü kutup başlarında beyaz oksitlenme var, şase kablosu gevşek."},
+     "fixture_signals": {
+         "initial": {"route": {"lv_electrical": 0.72, "ecu_comm": 0.16, "engine": 0.12}, "sufficient": 0.38, "critical": 0.06, "priority": {"score": 1.6, "probabilities": {}}, "has": {}},
+         "after": {
+             "battery_voltage": {"route": {"lv_electrical": 0.94, "ecu_comm": 0.04, "engine": 0.02}, "sufficient": 0.90, "critical": 0.05, "priority": {"score": 1.6, "probabilities": {}}, "has": {"battery_voltage": 0.96}},
+             "connector_photo": {"route": {"lv_electrical": 0.91, "ecu_comm": 0.06, "engine": 0.03}, "sufficient": 0.86, "critical": 0.05, "priority": {"score": 1.6, "probabilities": {}}, "has": {"connector_photo": 0.95}},
+         },
+     }},
     {"id": "can_comm", "title": "Aynı anda çoklu uyarı lambası",
      "vehicle": {"family": "Isuzu Citiport 12", "fuel": "diesel", "km": 412000},
      "technician_note": "Göstergede aynı anda ABS, şanzıman ve motor uyarıları yandı, birkaç saniye sonra söndü. Araç normal sürülüyor.",
      "dtc_codes": ["U0100", "U0121"], "recent_repairs": "Geçen ay gösterge paneli değişti.", "expected": "ecu_comm",
      "answers": {"can_resistance": "CAN-H / CAN-L arası 120Ω ölçüldü (60Ω olmalı); bir sonlandırma direnci devre dışı.",
-                 "battery_voltage": "24.6V, normal."}},
+                 "battery_voltage": "24.6V, normal."},
+     "fixture_signals": {
+         "initial": {"route": {"ecu_comm": 0.68, "lv_electrical": 0.22, "brakes": 0.06, "transmission": 0.04}, "sufficient": 0.34, "critical": 0.12, "priority": {"score": 1.9, "probabilities": {}}, "has": {"battery_voltage": 0.88, "service_history": 0.82, "connector_photo": 0.85}},
+         "after": {
+             "can_resistance": {"route": {"ecu_comm": 0.95, "lv_electrical": 0.03, "brakes": 0.01, "transmission": 0.01}, "sufficient": 0.92, "critical": 0.10, "priority": {"score": 1.9, "probabilities": {}}, "has": {"battery_voltage": 0.88, "service_history": 0.82, "connector_photo": 0.85, "can_resistance": 0.98}},
+             "battery_voltage": {"route": {"ecu_comm": 0.82, "lv_electrical": 0.12, "brakes": 0.04, "transmission": 0.02}, "sufficient": 0.72, "critical": 0.10, "priority": {"score": 1.9, "probabilities": {}}, "has": {"battery_voltage": 0.96}},
+         },
+     }},
     {"id": "power_loss", "title": "Yokuşta çekiş kaybı (belirsiz)",
      "vehicle": {"family": "Isuzu Novo Lux", "fuel": "diesel", "km": 265000},
      "technician_note": "Yokuşta çekiş düşüyor, araç ileri gitmekte zorlanıyor.",
@@ -27,29 +41,65 @@ SCENARIOS = [
                  "trans_log": "Şanzıman yağı 118°C'ye çıkıyor, 3-4 vites geçişinde patinaj kaydı var.",
                  "fluid_check": "Motor yağı ve antifriz normal seviyede.",
                  "sound_video": "Hızlanırken devir yükseliyor ama araç hızlanmıyor.",
-                 "road_test": "Yokuşta devir 2200'e fırlıyor, hız artmıyor; kavrama/şanzıman kaçırması var."}},
+                 "road_test": "Yokuşta devir 2200'e fırlıyor, hız artmıyor; kavrama/şanzıman kaçırması var."},
+     "fixture_signals": {
+         "initial": {"route": {"engine": 0.52, "transmission": 0.42, "lv_electrical": 0.06}, "sufficient": 0.22, "critical": 0.10, "priority": {"score": 1.8, "probabilities": {}}, "has": {}},
+         "after": {
+             "dtc_scan": {"route": {"transmission": 0.76, "engine": 0.20, "lv_electrical": 0.04}, "sufficient": 0.54, "critical": 0.10, "priority": {"score": 1.8, "probabilities": {}}, "has": {"dtc_scan": 0.95}},
+             "trans_log": {"route": {"transmission": 0.94, "engine": 0.05, "lv_electrical": 0.01}, "sufficient": 0.91, "critical": 0.10, "priority": {"score": 1.8, "probabilities": {}}, "has": {"dtc_scan": 0.95, "trans_log": 0.96}},
+             "sound_video": {"route": {"transmission": 0.86, "engine": 0.12, "lv_electrical": 0.02}, "sufficient": 0.80, "critical": 0.10, "priority": {"score": 1.8, "probabilities": {}}, "has": {"sound_video": 0.95}},
+             "fluid_check": {"route": {"transmission": 0.84, "engine": 0.14, "lv_electrical": 0.02}, "sufficient": 0.78, "critical": 0.10, "priority": {"score": 1.8, "probabilities": {}}, "has": {"fluid_check": 0.95}},
+             "road_test": {"route": {"transmission": 0.93, "engine": 0.06, "lv_electrical": 0.01}, "sufficient": 0.90, "critical": 0.10, "priority": {"score": 1.8, "probabilities": {}}, "has": {"road_test": 0.96}},
+         },
+     }},
     {"id": "engine_overheat", "title": "Hararet ve antifriz eksilmesi",
      "vehicle": {"family": "Isuzu N-Wide", "fuel": "diesel", "km": 98000},
      "technician_note": "Uzun yolda hararet göstergesi kırmızıya yaklaşıyor, antifriz eksiliyor.",
      "dtc_codes": ["P0217"], "recent_repairs": "", "expected": "engine",
-     "answers": {"fluid_check": "Antifriz minimumun altında, yağda emülsiyon yok, radyatör altında sızıntı izi var."}},
+     "answers": {"fluid_check": "Antifriz minimumun altında, yağda emülsiyon yok, radyatör altında sızıntı izi var."},
+     "fixture_signals": {
+         "initial": {"route": {"engine": 0.84, "transmission": 0.08, "ecu_comm": 0.05, "lv_electrical": 0.03}, "sufficient": 0.46, "critical": 0.22, "priority": {"score": 2.0, "probabilities": {}}, "has": {}},
+         "after": {
+             "fluid_check": {"route": {"engine": 0.94, "transmission": 0.03, "ecu_comm": 0.02, "lv_electrical": 0.01}, "sufficient": 0.89, "critical": 0.15, "priority": {"score": 2.0, "probabilities": {}}, "has": {"fluid_check": 0.96}},
+         },
+     }},
     {"id": "hv_charging", "title": "Şarj 2-3 dakikada kesiliyor",
      "vehicle": {"family": "Isuzu Novociti Volt", "fuel": "electric", "km": 54000},
      "technician_note": "Araç şarja takılıyor ama şarj 2-3 dakika sonra kesiliyor.",
      "dtc_codes": [], "recent_repairs": "", "expected": "hv_charging",
      "answers": {"charging_log": "İstasyon kaydı: 'Vehicle-side contactor open'; oturum 140. saniyede sonlandı. Farklı istasyonda da aynı.",
-                 "connector_photo": "Şarj soketinde pin 4'te renk değişimi ve yanma izi."}},
+                 "connector_photo": "Şarj soketinde pin 4'te renk değişimi ve yanma izi."},
+     "fixture_signals": {
+         "initial": {"route": {"hv_charging": 0.64, "hv_battery": 0.26, "ecu_comm": 0.06, "lv_electrical": 0.04}, "sufficient": 0.32, "critical": 0.16, "priority": {"score": 2.2, "probabilities": {}}, "has": {}},
+         "after": {
+             "charging_log": {"route": {"hv_charging": 0.76, "hv_battery": 0.14, "lv_electrical": 0.06, "ecu_comm": 0.04}, "sufficient": 0.52, "critical": 0.15, "priority": {"score": 2.2, "probabilities": {}}, "has": {"charging_log": 0.95}},
+             "connector_photo": {"route": {"hv_charging": 0.93, "hv_battery": 0.04, "lv_electrical": 0.02, "ecu_comm": 0.01}, "sufficient": 0.90, "critical": 0.14, "priority": {"score": 2.2, "probabilities": {}}, "has": {"charging_log": 0.95, "connector_photo": 0.95}},
+         },
+     }},
     {"id": "hv_battery", "title": "Menzil düşüşü + batarya sıcaklık uyarısı",
      "vehicle": {"family": "Isuzu Citivolt 12", "fuel": "electric", "km": 76000},
      "technician_note": "Menzil son haftada belirgin düştü, batarya sıcaklık uyarısı ara ara yanıyor.",
      "dtc_codes": [], "recent_repairs": "", "expected": "hv_battery",
      "answers": {"hv_isolation": "İzolasyon direnci 2.4 MΩ, normal.",
-                 "charging_log": "Şarj oturumları normal tamamlanıyor; BMS modül 3'te 180 mV hücre dengesizliği uyarısı."}},
+                 "charging_log": "Şarj oturumları normal tamamlanıyor; BMS modül 3'te 180 mV hücre dengesizliği uyarısı."},
+     "fixture_signals": {
+         "initial": {"route": {"hv_battery": 0.62, "hv_charging": 0.22, "hv_inverter": 0.12, "ecu_comm": 0.04}, "sufficient": 0.30, "critical": 0.24, "priority": {"score": 2.1, "probabilities": {}}, "has": {}},
+         "after": {
+             "charging_log": {"route": {"hv_battery": 0.91, "hv_charging": 0.05, "hv_inverter": 0.03, "ecu_comm": 0.01}, "sufficient": 0.86, "critical": 0.20, "priority": {"score": 2.1, "probabilities": {}}, "has": {"charging_log": 0.96}},
+             "hv_isolation": {"route": {"hv_battery": 0.89, "hv_inverter": 0.07, "hv_charging": 0.04}, "sufficient": 0.84, "critical": 0.18, "priority": {"score": 2.1, "probabilities": {}}, "has": {"hv_isolation": 0.96}},
+         },
+     }},
     {"id": "hv_propulsion", "title": "Kalkışta sarsıntı, çekiş kesiliyor",
      "vehicle": {"family": "Isuzu Citivolt 12", "fuel": "electric", "km": 31000},
      "technician_note": "Araç kalkışta sarsılıyor, bazen çekiş tamamen kesiliyor ve 'sürüş sistemi arızası' uyarısı geliyor.",
      "dtc_codes": ["P0A78"], "recent_repairs": "", "expected": "hv_inverter",
-     "answers": {"hv_isolation": "İzolasyon direnci 2.1 MΩ, normal; batarya hücreleri dengeli."}},
+     "answers": {"hv_isolation": "İzolasyon direnci 2.1 MΩ, normal; batarya hücreleri dengeli."},
+     "fixture_signals": {
+         "initial": {"route": {"hv_inverter": 0.86, "hv_battery": 0.09, "transmission": 0.05}, "sufficient": 0.72, "critical": 0.25, "priority": {"score": 2.3, "probabilities": {}}, "has": {}},
+         "after": {
+             "hv_isolation": {"route": {"hv_inverter": 0.94, "hv_battery": 0.04, "transmission": 0.02}, "sufficient": 0.91, "critical": 0.18, "priority": {"score": 2.3, "probabilities": {}}, "has": {"hv_isolation": 0.96}},
+         },
+     }},
     {"id": "intermittent_stall", "title": "Seyirde ara ara stop etme (belirsiz)",
      "vehicle": {"family": "Isuzu NPR 10", "fuel": "diesel", "km": 156000},
      "technician_note": "Araç seyir halindeyken ara ara stop ediyor, birkaç saniye sonra tekrar çalışıyor.",
@@ -57,25 +107,54 @@ SCENARIOS = [
      "answers": {"dtc_scan": "Aktif kod yok; geçmişte U3003 (besleme voltajı) kaydı var.",
                  "battery_voltage": "Akü 24.9V normal; stop anında besleme voltajı 9V'a düşüyor.",
                  "connector_photo": "Kontak anahtarı arkasındaki konnektörde gevşeklik ve oksitlenme; konnektör oynatınca gösterge sönüyor.",
-                 "fluid_check": "Yağ ve antifriz normal."}},
+                 "fluid_check": "Yağ ve antifriz normal."},
+     "fixture_signals": {
+         "initial": {"route": {"engine": 0.48, "lv_electrical": 0.36, "ecu_comm": 0.16}, "sufficient": 0.20, "critical": 0.18, "priority": {"score": 2.0, "probabilities": {}}, "has": {}},
+         "after": {
+             "dtc_scan": {"route": {"lv_electrical": 0.72, "ecu_comm": 0.18, "engine": 0.10}, "sufficient": 0.48, "critical": 0.16, "priority": {"score": 2.0, "probabilities": {}}, "has": {"dtc_scan": 0.95}},
+             "battery_voltage": {"route": {"lv_electrical": 0.92, "ecu_comm": 0.05, "engine": 0.03}, "sufficient": 0.88, "critical": 0.14, "priority": {"score": 2.0, "probabilities": {}}, "has": {"dtc_scan": 0.95, "battery_voltage": 0.96}},
+             "connector_photo": {"route": {"lv_electrical": 0.94, "ecu_comm": 0.04, "engine": 0.02}, "sufficient": 0.91, "critical": 0.12, "priority": {"score": 2.0, "probabilities": {}}, "has": {"connector_photo": 0.95}},
+             "fluid_check": {"route": {"lv_electrical": 0.68, "ecu_comm": 0.20, "engine": 0.12}, "sufficient": 0.45, "critical": 0.16, "priority": {"score": 2.0, "probabilities": {}}, "has": {"fluid_check": 0.95}},
+         },
+     }},
     {"id": "critical_fire", "title": "Torpido arkasından yanık kokusu",
      "vehicle": {"family": "Isuzu Citiport 12", "fuel": "diesel", "km": 520000},
      "technician_note": "Sürücü torpido arkasından yanık kokusu geldiğini ve hafif duman gördüğünü bildirdi.",
-     "dtc_codes": [], "recent_repairs": "", "expected": "ESCALATE", "answers": {}},
+     "dtc_codes": [], "recent_repairs": "", "expected": "ESCALATE", "answers": {},
+     "fixture_signals": {
+         "initial": {"route": {"lv_electrical": 0.65, "ecu_comm": 0.25, "engine": 0.10}, "sufficient": 0.40, "critical": 0.92, "priority": {"score": 2.9, "probabilities": {}}, "has": {}},
+         "after": {},
+     }},
     {"id": "critical_brake", "title": "Fren pedalı derine gidiyor",
      "vehicle": {"family": "Isuzu NPR 10", "fuel": "diesel", "km": 230000},
      "technician_note": "Fren pedalı derine gidiyor, araç zor duruyor, hava basıncı uyarısı yanıyor.",
-     "dtc_codes": [], "recent_repairs": "", "expected": "ESCALATE", "answers": {}},
+     "dtc_codes": [], "recent_repairs": "", "expected": "ESCALATE", "answers": {},
+     "fixture_signals": {
+         "initial": {"route": {"brakes": 0.88, "steering_suspension": 0.08, "lv_electrical": 0.04}, "sufficient": 0.55, "critical": 0.89, "priority": {"score": 2.9, "probabilities": {}}, "has": {}},
+         "after": {},
+     }},
     {"id": "brake_noise", "title": "Frende gıcırtı, performans normal",
      "vehicle": {"family": "Isuzu Novo", "fuel": "diesel", "km": 143000},
      "technician_note": "Frenlemede arka tekerden gıcırtı sesi geliyor, frenleme performansı normal.",
      "dtc_codes": [], "recent_repairs": "", "expected": "brakes",
-     "answers": {"brake_pressure": "Sistem basıncı 8.2 bar, kaçak yok. Arka balatalar aşınma sınırında."}},
+     "answers": {"brake_pressure": "Sistem basıncı 8.2 bar, kaçak yok. Arka balatalar aşınma sınırında."},
+     "fixture_signals": {
+         "initial": {"route": {"brakes": 0.85, "steering_suspension": 0.11, "transmission": 0.04}, "sufficient": 0.74, "critical": 0.12, "priority": {"score": 1.3, "probabilities": {}}, "has": {}},
+         "after": {
+             "brake_pressure": {"route": {"brakes": 0.96, "steering_suspension": 0.03, "transmission": 0.01}, "sufficient": 0.93, "critical": 0.08, "priority": {"score": 1.3, "probabilities": {}}, "has": {"brake_pressure": 0.96}},
+         },
+     }},
     {"id": "steering_vibration", "title": "Yüksek hızda direksiyon titremesi",
      "vehicle": {"family": "Isuzu Kendo", "fuel": "diesel", "km": 87000},
      "technician_note": "80 km/s üzerinde direksiyonda titreme var, araç hafif sağa çekiyor.",
      "dtc_codes": [], "recent_repairs": "", "expected": "steering_suspension",
-     "answers": {"road_test": "80-90 km/s arası titreme belirgin, sağ ön lastikte düzensiz aşınma, rot ayarı bozuk."}},
+     "answers": {"road_test": "80-90 km/s arası titreme belirgin, sağ ön lastikte düzensiz aşınma, rot ayarı bozuk."},
+     "fixture_signals": {
+         "initial": {"route": {"steering_suspension": 0.86, "brakes": 0.10, "transmission": 0.04}, "sufficient": 0.72, "critical": 0.14, "priority": {"score": 1.5, "probabilities": {}}, "has": {}},
+         "after": {
+             "road_test": {"route": {"steering_suspension": 0.95, "brakes": 0.03, "transmission": 0.02}, "sufficient": 0.92, "critical": 0.10, "priority": {"score": 1.5, "probabilities": {}}, "has": {"road_test": 0.96}},
+         },
+     }},
     {"id": "vague_noise", "title": "Garip ses (çok eksik vaka)",
      "vehicle": {"family": "Isuzu Novo", "fuel": "diesel", "km": 301000},
      "technician_note": "Araçta garip bir ses var, müşteri şikayetçi.",
@@ -83,8 +162,30 @@ SCENARIOS = [
      "answers": {"sound_video": "Ses motor bölmesinden geliyor; rölantide metalik tıkırtı, devirle artıyor.",
                  "dtc_scan": "Aktif kod yok.",
                  "fluid_check": "Motor yağı minimumda ve koyu; antifriz normal.",
-                 "road_test": "Tıkırtı motor devriyle artıyor, araç hızından bağımsız."}},
+                 "road_test": "Tıkırtı motor devriyle artıyor, araç hızından bağımsız."},
+     "fixture_signals": {
+         "initial": {"route": {"steering_suspension": 0.42, "engine": 0.34, "transmission": 0.24}, "sufficient": 0.15, "critical": 0.08, "priority": {"score": 1.4, "probabilities": {}}, "has": {}},
+         "after": {
+             "sound_video": {"route": {"engine": 0.76, "transmission": 0.16, "steering_suspension": 0.08}, "sufficient": 0.52, "critical": 0.08, "priority": {"score": 1.4, "probabilities": {}}, "has": {"sound_video": 0.95}},
+             "fluid_check": {"route": {"engine": 0.92, "transmission": 0.05, "steering_suspension": 0.03}, "sufficient": 0.88, "critical": 0.08, "priority": {"score": 1.4, "probabilities": {}}, "has": {"sound_video": 0.95, "fluid_check": 0.96}},
+             "dtc_scan": {"route": {"engine": 0.88, "transmission": 0.08, "steering_suspension": 0.04}, "sufficient": 0.82, "critical": 0.08, "priority": {"score": 1.4, "probabilities": {}}, "has": {"sound_video": 0.95, "dtc_scan": 0.95}},
+             "road_test": {"route": {"engine": 0.93, "transmission": 0.05, "steering_suspension": 0.02}, "sufficient": 0.90, "critical": 0.08, "priority": {"score": 1.4, "probabilities": {}}, "has": {"road_test": 0.96}},
+         },
+     }},
 ]
+
+
+def fixture_signals_for(sc, case):
+    """Return deterministic fixture signals for scenario `sc` given collected evidence in `case`."""
+    fx = sc.get("fixture_signals") or {}
+    ev_list = case.get("evidence") or []
+    if not ev_list:
+        return fx.get("initial")
+    after = fx.get("after") or {}
+    for ev in reversed(ev_list):
+        if ev["id"] in after:
+            return after[ev["id"]]
+    return fx.get("initial")
 
 # Inline SVG schematics used as deterministic demo attachments (no external network dependencies).
 SVG_CAN = "data:image/svg+xml;utf8," + (
@@ -430,6 +531,7 @@ def build_demo_cases(decide_fn, settings):
                 "at": st_spec["at"],
                 "latency_ms": st_spec["latency_ms"],
                 "signals": st_spec["signals"],
+                "settings": dict(settings),
                 "decision": d,
             })
             case["status"] = status_map[d["action"]]

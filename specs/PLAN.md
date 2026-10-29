@@ -40,6 +40,17 @@ Durum: `[ ]` yapılacak · `[x]` bitti. Her görev gereksinim ID'si taşır.
 - [x] Ekran E — Uzman İncelemesi: onay/override akışı, uzman kuyrukları ve RAEP politika/simülasyon görünümü [FR-19]
 - [x] 5 temsili demo vakası tohumlama ve `/servicepilot/` alt yolu (GitHub Pages + FastAPI) uyumluluğu [FR-20]
 
+## M6 — MVP Karar Bütünlüğü, Şeffaflık ve Akış Sertleştirme (P0/P1)
+- [x] Geçiş kuralları: kanıt bekleyen ve kritik vakalarda doğrudan onay engellendi (409) [FR-18, FR-19]
+- [x] Kritik vaka koruması: tehlikeli saha testleri (S > 0) reddedildi (422); güvenli belge/fotoğrafta eskalasyon korundu [FR-18]
+- [x] Hedef doğrulaması: kritik eskalasyonda rastgele hedef uydurma engellendi; uzman hedefi ve gerekçe şartı getirildi [FR-19]
+- [x] Değişmez geçmiş ve insan kararı: `recompute` append-only yapıldı; onaylı/override yönlendirmeler korundu [FR-10, FR-18]
+- [x] Gerçek replay ve dürüst simülasyon: beklenen etiketten tahmin kopyalama ve sentetik "normal" bulgu uydurma kaldırıldı [FR-13]
+- [x] 3 adımlı tıklanabilir sihirbaz (`Araç` → `Şikayet` → `Kanıt ve Kontrol`), taslak saklama ve dosya kotası [FR-17]
+- [x] Vaka detayında üstte `Sıradaki İşlem` özeti ve mobil duyarlı sıralama [FR-18]
+- [x] Tanımsız vaka (`SP-9999`) için temiz 404 / bulunamadı durumu [FR-18]
+- [x] Kontrast (`--text-muted: #8E9EB2` ≥ 4.5:1), mobil çekmece odağı/Escape ve klavye erişilebilirliği [NFR-6]
+
 ## Sonraki faz (MVP dışı)
 - Fotoğraf kanıtı (shadow-mode multimodal)
 - Gerçek kapalı vaka verisiyle `informs`/`ρ`/maliyet kalibrasyonu
