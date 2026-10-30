@@ -40,3 +40,4 @@ Her gereksinim bir kabul kriteri (AC) taşır. Kod değişiklikleri bu ID'lere r
 | NFR-6 | Dil | UI Türkçe; kod/yorum İngilizce. |
 | NFR-7 | Dürüstlük | Doğrulanmamış Isuzu metriği UI/spec'te gösterilmez; katalog maliyetleri "varsayım" etiketlidir. |
 | NFR-8 | Dayanıklılık | Jev hatası/zaman aşımında vaka bozulmaz; adım `ESCALATE` (sebep: "Jev erişilemedi") olarak kaydedilir. |
+| NFR-9 | Statik yayın | GitHub Pages yalnız `static/` dosyalarını HTTPS ile `/ServicePilot/` altında yayımlar. Anahtar, SQLite ve Python kaynakları yayın artifact'ına girmez. Statik mod canlı Jev gibi sunulmaz. `main` güncellemeleri ve manuel tetikleme aynı kontrollü workflow'u kullanır. |

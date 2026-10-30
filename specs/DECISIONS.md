@@ -41,3 +41,8 @@
 - **Bağlam:** Aynı kararın sıradaki işlem, eksik kanıt, risk ve analiz kartlarında tekrarlanması akışı gizliyordu.
 - **Karar:** Tek ana işlem; kısa vaka bağlamı; görünür Jev sinyalleri ve ayrı RAEP hesabı. Tam teknik iz, geçmiş ve araç bilgileri native disclosures altında. Her adım kendi politika snapshot’ını ve sinyal kaynağını taşır.
 - **Sonuç:** Mevcut motor, API eylemleri ve üç adımlı form korunur. Sentetik veri veya bilinmeyen eski kaynak canlı Jev gibi sunulmaz. Mobilde ana işlem önce gelir. ADR-8’in “birebir aynı deneyim” ifadesi davranış benzerliğidir; statik mod gerçek Jev çıkarımı içermez.
+
+## ADR-10 — Ayrı GitHub Pages yayını [NFR-9, FR-20]
+- **Bağlam:** MVP paylaşılabilir bir HTTPS adresinde çalışmalı; kişisel portföy değiştirilmemeli.
+- **Karar:** ServicePilot deposunda GitHub Actions ile yalnız `static/` artifact'ı yayımlanır. Python API ve anahtar GitHub Pages'e taşınmaz. Mevcut açıkça etiketli yerel demo korunur.
+- **Sonuç:** Derleme veya yeni uygulama bağımlılığı gerekmez. Canlı Jev bu yayının parçası değildir; ayrıca kimlik/kullanım sınırları ve kalıcı veri tasarımı olan backend gerektirir. Sadece CORS kontrolüne güvenen herkese açık bir Jev proxy'si kurulmaz.

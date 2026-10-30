@@ -6,6 +6,14 @@ ServicePilot, eksik bir servis vakasında **sıradaki en değerli kanıtı** se�
 - **RAEP (Risk-Aware Evidence Policy)** → `app/raep.py`: safety gate, hiyerarşik routing, kanıt fayda-maliyet hesabı, eskalasyon.
 - Aksiyonlar: `ROUTE` · `REQUEST_EVIDENCE` · `ESCALATE`.
 
+## Paylaşılabilir demo
+
+[GitHub Pages — ServicePilot](https://alperkartkaya.github.io/ServicePilot/)
+
+Bu adres **statik yerel demo** kullanır; canlı Jev çağırmaz. Vakalar tarayıcıda saklanır, kullanıcılar arasında paylaşılmaz. Gerçek müşteri verisi girmeyin. `main` üzerinde statik dosyalar değişince `.github/workflows/pages.yml` yalnız `static/` dizinini yayımlar. Manuel yayın: `gh workflow run pages.yml`.
+
+Canlı Jev için aşağıdaki FastAPI sunucusu gerekir; `.env` hiçbir zaman Pages artifact'ına dahil edilmez. Cloudflare Worker bu adımda kurulmadı: anahtarı gizlemek tek başına yeterli değildir; canlı servis için kimlik/kullanım sınırı ve veri kalıcılığı da gerekir.
+
 ## Kurulum
 
 ```bash

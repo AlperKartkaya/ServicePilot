@@ -64,3 +64,7 @@ Durum: `[ ]` yapılacak · `[x]` bitti. Her görev gereksinim ID'si taşır.
 - [x] Kısa genel bakış, üç sonuç için gerçek demo girişi ve sade form
 - [x] Sinyal kaynağı, politika snapshot’ı ve geçmişin doğruluğu
 - [x] JS/Python regresyonları, masaüstü/mobil tarayıcı kontrolü, demo rehberi
+
+## M8 — GitHub Pages yayını [NFR-9, FR-20]
+- [x] Yalnız statik dosyaları yayımlayan otomatik workflow
+- [ ] GitHub Pages etkinleştirme ve gerçek HTTPS yayın kontrolü
