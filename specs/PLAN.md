@@ -57,3 +57,10 @@ Durum: `[ ]` yapılacak · `[x]` bitti. Her görev gereksinim ID'si taşır.
 - Risk–coverage eğrisi / AURC, kalibrasyon (ECE/Brier)
 - Shadow-mode log karşılaştırma (uzman ne yaptı vs ServicePilot ne önerdi)
 - ProEye / DMS entegrasyonu
+
+## M7 — Son MVP akışı [FR-9, FR-12, FR-17–21]
+- [x] XERJ kurulumu, proje ve iki referans deponun yerel indeksi; beş proje-local skill
+- [x] Tek işlemli vaka ekranı, görünür Jev/RAEP izi, teknik ayrıntılar için aşamalı açılım
+- [x] Kısa genel bakış, üç sonuç için gerçek demo girişi ve sade form
+- [x] Sinyal kaynağı, politika snapshot’ı ve geçmişin doğruluğu
+- [x] JS/Python regresyonları, masaüstü/mobil tarayıcı kontrolü, demo rehberi

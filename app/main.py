@@ -115,7 +115,7 @@ def new_case(data: dict, cid: str):
     }
 
 
-def apply(case, signals, latency_ms, s, recomputed: bool = False):
+def apply(case, signals, latency_ms, s, recomputed: bool = False, signal_source: str = "unknown"):
     ts = now()
     was_critical = raep.is_critical_case(case, s) or (
         case.get("status") == "escalated" and case.get("review_status") == "pending_review"
@@ -126,6 +126,7 @@ def apply(case, signals, latency_ms, s, recomputed: bool = False):
     step = {
         "at": ts,
         "latency_ms": latency_ms,
+        "signal_source": signal_source,
         "signals": signals,
         "settings": dict(s),
         "decision": d,
@@ -194,11 +195,12 @@ def apply(case, signals, latency_ms, s, recomputed: bool = False):
 async def run_step(case, s):
     # Safety gate runs before Jev (ARCHITECTURE §2): no model call when a deterministic rule fires.
     if raep.safety_hits(case):
-        signals, ms = None, 0
+        signals, ms, source = None, 0, "safety"
     else:
         async with httpx.AsyncClient() as http_client:
             signals, ms = await jev.ask(case, http_client)
-    return apply(case, signals, ms, s)
+        source = "jev" if signals is not None else "unavailable"
+    return apply(case, signals, ms, s, signal_source=source)
 
 
 def seed_demo_data():
@@ -458,7 +460,8 @@ def recompute(cid: str):
     if not case.get("steps"):
         raise HTTPException(409, "Yeniden hesaplanacak karar adımı bulunmuyor.")
     last_with_sig = next((st for st in reversed(case["steps"]) if st.get("signals") is not None), case["steps"][-1])
-    case = apply(case, last_with_sig.get("signals"), 0, store.get_settings(), recomputed=True)
+    case = apply(case, last_with_sig.get("signals"), 0, store.get_settings(), recomputed=True,
+                 signal_source=last_with_sig.get("signal_source", "unknown"))
     store.save_case(case)
     return case
 

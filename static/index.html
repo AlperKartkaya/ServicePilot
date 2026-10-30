@@ -3,7 +3,8 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>ServicePilot — Service Intelligence</title>
+  <title>ServicePilot — Doğru kanıt, doğru uzman</title>
+  <meta name="theme-color" content="#090D13">
   <meta name="description" content="Ticari araç satış sonrası servis ağları için aktif kanıt orkestrasyonu ve uzman yönlendirme karar destek platformu.">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -11,6 +12,7 @@
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
+  <a class="skip-link" href="#main">İçeriğe geç</a>
   <div class="app-shell">
     <!-- Mobile backdrop -->
     <div class="sidebar-backdrop" id="sidebar-backdrop" hidden></div>
@@ -30,7 +32,7 @@
           </span>
           <div class="brand-text">
             <span class="brand-title">ServicePilot</span>
-            <span class="brand-subtitle">Service Intelligence</span>
+            <span class="brand-subtitle">Kanıttan uzmanlığa</span>
           </div>
         </a>
         <button type="button" class="icon-btn mobile-only" id="sidebar-close" aria-label="Menüyü kapat">
@@ -89,7 +91,7 @@
           <div class="workspace-actions">
             <button type="button" class="btn-subtle btn-xs" id="open-policy-btn" title="RAEP Politika ve Replay Değerlendirmesi">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><line x1="4" y1="21" x2="4" y2="14"></line><line x1="4" y1="10" x2="4" y2="3"></line><line x1="12" y1="21" x2="12" y2="12"></line><line x1="12" y1="8" x2="12" y2="3"></line><line x1="20" y1="21" x2="20" y2="16"></line><line x1="20" y1="12" x2="20" y2="3"></line><line x1="1" y1="14" x2="7" y2="14"></line><line x1="9" y1="8" x2="15" y2="8"></line><line x1="17" y1="16" x2="23" y2="16"></line></svg>
-              <span>Politika &amp; Simülasyon</span>
+              <span>RAEP ve replay</span>
             </button>
             <button type="button" class="btn-subtle btn-xs" id="reset-demo-btn" title="Temsili demo vakalarını başlangıç durumuna döndür">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path><path d="M3 3v5h5"></path></svg>
@@ -142,15 +144,24 @@
         <section data-panel="overview" class="screen-panel" id="panel-overview">
           <div class="overview-hero">
             <div class="overview-hero-text">
-              <h1>Servis operasyonlarına netlik kazandırın.</h1>
-              <p>Vakaları inceleyin, eksik kanıtları tamamlayın ve doğru uzman ekibe yönlendirin.</p>
+              <h1>Önce doğru kanıt.<br>Sonra doğru uzman.</h1>
+              <p>Eksik servis vakasını hazır bir uzman devrine dönüştürün. Teşhis değil, sıradaki doğru adım.</p>
             </div>
             <div class="overview-hero-actions">
-              <a href="#new" class="btn btn-primary">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
-                <span>+ Yeni Vaka Oluştur</span>
-              </a>
+              <button type="button" class="btn btn-primary" data-start-demo="can_comm">Kanıt döngüsünü dene</button>
+              <a href="#new" class="btn btn-secondary">Kendi vakanı aç</a>
             </div>
+          </div>
+
+          <div class="method-strip" aria-label="ServicePilot nasıl çalışır">
+            <section class="method-step"><h2>Jev okur</h2><p>Servis notundan uzmanlık, yeterlilik ve risk olasılıklarını çıkarır.</p><small>Choice · Noul · Score</small></section>
+            <section class="method-step"><h2>RAEP hesaplar</h2><p>Risk ile kanıt maliyetini tartar. En değerli sonraki adımı seçer.</p><small>Risk-Aware Evidence Policy</small></section>
+            <section class="method-step"><h2>Vaka ilerler</h2><p>Kanıt istenir, ekibe yönlendirilir veya insan uzmana aktarılır.</p><small>Karar ve insan onayı kayıt altında</small></section>
+          </div>
+          <div class="demo-shortcuts"><span>Diğer demo akışları:</span>
+            <button type="button" data-start-demo="hv_propulsion">Yönlendirme akışı</button>
+            <button type="button" data-start-demo="critical_fire">Güvenlik riski</button>
+            <span>Sentetik vakalar · Gerçek saha verisi değil</span>
           </div>
 
           <div class="kpi-grid" id="overview-kpis" aria-live="polite"></div>
@@ -160,7 +171,7 @@
               <div class="section-header">
                 <div>
                   <h2>Öncelikli Vakalar</h2>
-                  <p class="section-subtitle">Kanıt tamamlanması, yönlendirme teyidi veya uzman kararı bekleyen vakalar</p>
+
                 </div>
                 <a href="#cases" class="btn btn-secondary btn-sm">Tüm Vakaları Gör</a>
               </div>
@@ -171,7 +182,7 @@
               <div class="section-header">
                 <div>
                   <h2>Son Aktiviteler</h2>
-                  <p class="section-subtitle">Vaka adımları, kanıt girişleri ve karar kayıtları</p>
+
                 </div>
               </div>
               <div class="card activity-card">
@@ -188,7 +199,7 @@
           <div class="page-header">
             <div>
               <h1>Vakalar</h1>
-              <p class="page-subtitle">Sahadan iletilen servis vakalarını kanıt durumuna, önceliğe ve hedef uzmanlığa göre yönetin.</p>
+              <p class="page-subtitle">Kanıtı tamamlayın, yönlendirmeyi teyit edin.</p>
             </div>
             <div class="page-header-actions">
               <a href="#new" class="btn btn-primary">
@@ -224,7 +235,7 @@
           <div class="page-header">
             <div>
               <h1>Yeni Vaka</h1>
-              <p class="page-subtitle">Üç adımda araç, şikayet ve mevcut saha kanıtlarını girerek triyaj analizini başlatın.</p>
+              <p class="page-subtitle">Araç ve şikayeti girin. Sıradaki adımı ServicePilot belirlesin.</p>
             </div>
             <div class="page-header-actions">
               <a href="#cases" class="btn btn-secondary btn-sm">Vakalara Dön</a>
@@ -235,12 +246,10 @@
           <div class="card scenario-bar">
             <div class="scenario-bar-head">
               <div>
-                <span class="badge badge-info">İsteğe Bağlı Demo Senaryosu</span>
-                <strong>Örnek Senaryo ile Taslağı Doldur</strong>
-                <span class="text-secondary">Bir senaryo seçerek formu düzenlenebilir olarak doldurabilirsiniz.</span>
+                <strong>Hazır bir vakayla başlayın</strong>
               </div>
               <button type="button" class="btn btn-subtle btn-sm" id="toggle-scenarios-btn" aria-expanded="false" aria-controls="all-scenarios-drawer">
-                Tüm Senaryolar (13)
+                Tüm senaryolar
               </button>
             </div>
             <div class="scenario-pills" id="quick-scenarios"></div>
@@ -295,7 +304,7 @@
                 <span class="section-step" aria-hidden="true">1</span>
                 <div>
                   <h2 id="sec-vehicle-h" tabindex="-1">Araç Bilgileri</h2>
-                  <p>Aracın model ailesi, tahrik sistemi, kilometresi ve servis noktası bilgilerini girin.</p>
+                  <p>Model ve kilometre yeterli; diğer bilgileri biliyorsanız ekleyin.</p>
                 </div>
               </div>
 
@@ -354,8 +363,8 @@
               </div>
 
               <div class="form-footer">
-                <button type="button" class="btn btn-secondary" data-save-draft>Taslak Olarak Kaydet</button>
-                <button type="button" class="btn btn-primary" data-next-step="2">Devam: Şikayet Bilgileri →</button>
+                <button type="button" class="btn btn-secondary" data-save-draft>Taslağı kaydet</button>
+                <button type="button" class="btn btn-primary" data-next-step="2">Şikayete geç</button>
               </div>
             </section>
 
@@ -364,8 +373,8 @@
               <div class="form-section-head">
                 <span class="section-step" aria-hidden="true">2</span>
                 <div>
-                  <h2 id="sec-problem-h" tabindex="-1">Şikayet ve Arıza Açıklaması</h2>
-                  <p>Teknisyen gözlemini, arıza kodlarını (DTC) ve yakın tarihli onarım geçmişini belirtin.</p>
+                  <h2 id="sec-problem-h" tabindex="-1">Şikayet</h2>
+                  <p>Ne oldu, hangi koşulda? Mevcut arıza kodlarını da ekleyin.</p>
                 </div>
               </div>
 
@@ -404,9 +413,9 @@
               </div>
 
               <div class="form-footer">
-                <button type="button" class="btn btn-secondary" data-prev-step="1">← Geri: Araç</button>
-                <button type="button" class="btn btn-secondary" data-save-draft>Taslak Olarak Kaydet</button>
-                <button type="button" class="btn btn-primary" data-next-step="3">Devam: Kanıt ve Kontrol →</button>
+                <button type="button" class="btn btn-secondary" data-prev-step="1">Araç bilgilerine dön</button>
+                <button type="button" class="btn btn-secondary" data-save-draft>Taslağı kaydet</button>
+                <button type="button" class="btn btn-primary" data-next-step="3">Son kontrole geç</button>
               </div>
             </section>
 
@@ -415,8 +424,8 @@
               <div class="form-section-head">
                 <span class="section-step" aria-hidden="true">3</span>
                 <div>
-                  <h2 id="sec-evidence-h" tabindex="-1">Kanıtlar ve Başvuru Kontrolü</h2>
-                  <p>Mevcut saha fotoğraflarını veya ilk ölçümleri ekleyin (isteğe bağlı) ve özeti kontrol ederek analizi başlatın.</p>
+                  <h2 id="sec-evidence-h" tabindex="-1">Kanıt ve son kontrol</h2>
+                  <p>Varsa ilk ölçümleri ekleyin. Özeti kontrol edip kararı başlatın.</p>
                 </div>
               </div>
 
@@ -452,11 +461,11 @@
               <div class="form-error-banner" id="form-error" role="alert" hidden></div>
 
               <div class="form-footer">
-                <button type="button" class="btn btn-secondary" data-prev-step="2">← Geri: Şikayet</button>
-                <button type="button" class="btn btn-secondary" id="save-draft-btn" data-save-draft>Taslak Olarak Kaydet</button>
+                <button type="button" class="btn btn-secondary" data-prev-step="2">Şikayete dön</button>
+                <button type="button" class="btn btn-secondary" id="save-draft-btn" data-save-draft>Taslağı kaydet</button>
                 <button type="submit" class="btn btn-primary btn-lg" id="submit-case-btn">
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>
-                  <span>Vakayı Analiz Et</span>
+                  <span>Sıradaki adımı belirle</span>
                 </button>
               </div>
             </section>
@@ -473,7 +482,7 @@
           <div class="page-header">
             <div>
               <h1>Uzman İncelemesi</h1>
-              <p class="page-subtitle">Güvenlik kritik veya belirsiz vakaları değerlendirin, yönlendirme önerilerini onaylayın veya gerekçeli olarak değiştirin.</p>
+              <p class="page-subtitle">Bekleyen kararları inceleyin ve hedef ekibi teyit edin.</p>
             </div>
             <div class="view-tabs" role="tablist" aria-label="Uzman inceleme ve yönetim görünümleri">
               <button type="button" role="tab" class="tab-btn active" id="tab-btn-queue" data-review-tab="queue" aria-selected="true" aria-controls="review-tab-queue">
@@ -481,10 +490,10 @@
                 <span class="tab-count" id="tab-review-count">0</span>
               </button>
               <button type="button" role="tab" class="tab-btn" id="tab-btn-teams" data-review-tab="teams" aria-selected="false" aria-controls="review-tab-teams">
-                Uzman Ekip Kuyrukları
+                Ekip kuyrukları
               </button>
               <button type="button" role="tab" class="tab-btn" id="tab-btn-policy" data-review-tab="policy" aria-selected="false" aria-controls="review-tab-policy">
-                RAEP Politika &amp; Simülasyon
+                RAEP ve replay
               </button>
             </div>
           </div>
@@ -497,7 +506,7 @@
           <!-- Subview 2: Specialist Team Queues (FR-11) -->
           <div id="review-tab-teams" class="review-subpanel" role="tabpanel" aria-labelledby="tab-btn-teams" hidden>
             <div class="callout-bar">
-              <span><strong>Hiyerarşik Uzmanlık Kuyrukları:</strong> Otomatik önerilen (`Onay Bekliyor`) veya insan onayıyla kesinleşen (`Yönlendirildi`) vakalar hedef ekibe düşer. Yaprakta yeterli güven yoksa güvenli üst düğüme (hiyerarşik fallback) atanır.</span>
+              <span>Önerilen ve onaylanan atamalar hedef ekibe göre gruplanır. Yeterli olasılık yoksa RAEP üst uzmanlığı seçebilir.</span>
             </div>
             <div class="queues-grid" id="queues-grid"></div>
           </div>
@@ -639,7 +648,7 @@ U(e)     = L(s) · (err(s) − err'(e)) − λ · C(e)</pre>
         </button>
       </div>
       <div class="modal-body image-modal-body">
-        <img id="img-modal-src" src="" alt="Vaka görsel kanıtı">
+        <img id="img-modal-src" alt="Vaka görsel kanıtı">
         <p id="img-modal-caption" class="text-secondary"></p>
       </div>
     </div>

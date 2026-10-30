@@ -530,6 +530,7 @@ def build_demo_cases(decide_fn, settings):
             case["steps"].append({
                 "at": st_spec["at"],
                 "latency_ms": st_spec["latency_ms"],
+                "signal_source": "fixture" if st_spec["signals"] is not None else "safety",
                 "signals": st_spec["signals"],
                 "settings": dict(settings),
                 "decision": d,

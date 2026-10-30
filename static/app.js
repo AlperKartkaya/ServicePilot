@@ -551,6 +551,7 @@ function applyLocalDecision(caseObj, d, sig, latencyMs, s, recomputed = false) {
   caseObj.steps.push({
     at: ts,
     latency_ms: latencyMs,
+    signal_source: d.safety_hits?.length ? "safety" : "local",
     signals: sig,
     decision: d,
     settings: { ...s },
@@ -683,8 +684,10 @@ function buildFallbackDemoCases(settings) {
   ];
 
   return demos.map((r) => {
+    const reviewStatus = r.review_status;
     const d = jsDecide(r, r.signals, settings);
     applyLocalDecision(r, d, r.signals, r.signals ? 360 : 0, settings, false);
+    if (reviewStatus === "confirmed") r.review_status = reviewStatus;
     return r;
   });
 }
@@ -1160,25 +1163,21 @@ function renderOverview() {
     {
       label: "Açık Vakalar",
       value: openCases,
-      foot: `Toplam ${cases.length} kayıtlı servis vakası`,
       action: () => { S.caseFilter = "all"; location.hash = "#cases"; },
     },
     {
       label: "Kanıt Bekleyen",
       value: awaiting,
-      foot: "Teknisyen ölçüm veya görsel girişi bekliyor",
       action: () => { S.caseFilter = "awaiting_evidence"; location.hash = "#cases"; },
     },
     {
       label: "Uzman İncelemesinde",
       value: inReview,
-      foot: "Kritik eskalasyon veya yönlendirme onayı",
       action: () => { location.hash = "#review"; },
     },
     {
       label: "Yönlendirilmiş",
       value: routed,
-      foot: "Uzman ekibe devri onaylanan vakalar",
       action: () => { S.caseFilter = "routed"; location.hash = "#cases"; },
     },
   ];
@@ -1186,20 +1185,15 @@ function renderOverview() {
   const kpiEl = $("#overview-kpis");
   if (kpiEl) {
     kpiEl.innerHTML = kpis.map((k, idx) => `
-      <article class="kpi-card" data-kpi-idx="${idx}" tabindex="0" role="button" aria-label="${esc(k.label)}: ${k.value}">
-        <div class="kpi-top">
-          <span>${esc(k.label)}</span>
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><polyline points="9 18 15 12 9 6"></polyline></svg>
-        </div>
-        <div class="kpi-value">${k.value}</div>
-        <div class="kpi-foot">${esc(k.foot)}</div>
-      </article>
+      <button type="button" class="kpi-card" data-kpi-idx="${idx}" aria-label="${esc(k.label)}: ${k.value}">
+        <span class="kpi-top">${esc(k.label)}</span>
+        <span class="kpi-value">${k.value}</span>
+      </button>
     `).join("");
 
     $$(".kpi-card", kpiEl).forEach((el) => {
       const idx = Number(el.dataset.kpiIdx);
       el.onclick = kpis[idx].action;
-      el.onkeydown = (e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); kpis[idx].action(); } };
     });
   }
 
@@ -1225,7 +1219,7 @@ function renderOverview() {
         const team = suggestedTeamInfo(c);
         const evReq = c.pending_evidence ? S.catalog.evidence[c.pending_evidence]?.label : null;
         return `
-          <article class="priority-case-card ${borderCls}" data-open-case="${esc(c.id)}" tabindex="0" role="button" aria-label="${esc(c.id)} ${esc(c.vehicle.family)} vakasını aç">
+          <a href="#cases/${esc(c.id)}" class="priority-case-card ${borderCls}" aria-label="${esc(c.id)} ${esc(c.vehicle.family)} vakasını aç">
             <div class="p-case-left">
               <div class="p-case-top">
                 <span class="p-case-id">${esc(c.id)}</span>
@@ -1235,27 +1229,15 @@ function renderOverview() {
               </div>
               <p class="p-case-summary">${esc(c.technician_note)}</p>
               <div class="p-case-meta">
-                <span>Önerilen / Atanan Ekip: <strong>${esc(team.label)}</strong></span>
-                ${evReq ? `<span>Eksik Kanıt: <strong>${esc(evReq)}</strong></span>` : ""}
-                ${c.dtc_codes?.length ? `<span class="mono">DTC: ${esc(c.dtc_codes.join(", "))}</span>` : ""}
-                <span>Güncelleme: ${esc(formatTime(c.updated_at || c.created_at))}</span>
+                <span>${evReq ? `Sıradaki kanıt: <strong>${esc(evReq)}</strong>` : `Ekip: <strong>${esc(team.label)}</strong>`}</span>
               </div>
             </div>
             <div class="p-case-right">
               <span class="btn btn-secondary btn-sm">Vakayı Aç →</span>
             </div>
-          </article>
+          </a>
         `;
       }).join("");
-
-      $$(".priority-case-card", prioListEl).forEach((card) => {
-        card.onkeydown = (e) => {
-          if (e.key === "Enter" || e.key === " ") {
-            e.preventDefault();
-            location.hash = `#cases/${card.dataset.openCase}`;
-          }
-        };
-      });
     }
   }
 
@@ -1292,14 +1274,9 @@ function renderOverview() {
   const postureEl = $("#system-posture-card");
   if (postureEl) {
     postureEl.innerHTML = `
-      <div class="section-header" style="margin-bottom:4px">
-        <h3>Karar Katmanı Parametreleri (RAEP)</h3>
-        <a href="#policy" class="btn-subtle btn-xs">Ayarlar</a>
-      </div>
-      <div class="posture-row"><span>Yönlendirme Eşiği (τ_route)</span><strong>${num(S.settings.tau_route, 2)}</strong></div>
-      <div class="posture-row"><span>Kanıt Yeterlilik Eşiği (τ_suff)</span><strong>${num(S.settings.tau_suff, 2)}</strong></div>
-      <div class="posture-row"><span>Kritik Eskalasyon Eşiği (τ_crit)</span><strong>${num(S.settings.tau_crit, 2)}</strong></div>
-      <div class="posture-row"><span>Çalışma Modu</span><strong>${S.mode === "api" ? "FastAPI Sunucusu" : "Statik Yerel Motor"}</strong></div>
+      <div class="section-header"><h3>Çalışma ortamı</h3><a href="#policy" class="inline-link">RAEP ayarları</a></div>
+      <p>${S.mode === "api" ? "FastAPI bağlı. Yeni vakalar Jev ile değerlendirilir; temsili kayıtlar ayrıca etiketlenir." : "Yerel demo. Sinyaller temsili veya yerel kurallarla üretilir; canlı Jev çağrılmaz."}</p>
+      <p class="field-hint">Senaryolar sentetik; maliyetler uzman varsayımıdır. Saha doğruluğu veya tasarruf iddiası değildir.</p>
     `;
   }
 }
@@ -1616,7 +1593,7 @@ function handleFileReads(files, onAdd) {
 }
 
 function renderScenariosBar() {
-  const quickIds = ["can_comm", "hv_charging", "critical_fire", "engine_overheat", "intermittent_stall"];
+  const quickIds = ["can_comm", "hv_propulsion", "critical_fire"];
   const quick = S.scenarios.filter((s) => quickIds.includes(s.id));
   const qEl = $("#quick-scenarios");
   if (qEl) {
@@ -1634,7 +1611,6 @@ function renderScenariosBar() {
       <button type="button" class="scenario-card-btn" data-fill-scenario="${esc(s.id)}">
         <strong>${esc(s.title)}</strong>
         <span>${esc(s.vehicle.family)} · ${s.vehicle.fuel === "electric" ? "Elektrik" : "Dizel"} · ${Number(s.vehicle.km).toLocaleString("tr-TR")} km</span>
-        <span>Beklenen: ${esc(s.expected === "ESCALATE" ? "ESCALATE (Uzman)" : nodeLabel(s.expected))}</span>
       </button>
     `).join("");
   }
@@ -1771,545 +1747,207 @@ function barHtml(name, p, { thr, cls = "", hit = false } = {}) {
     </div>`;
 }
 
+function signalSource(step) {
+  if (step.decision?.safety_hits?.length) return "Güvenlik kuralı · Jev çağrılmadı";
+  const source = step.signal_source || (S.mode === "local" ? "local" : "unknown");
+  return ({ jev: "Canlı Jev", fixture: "Temsili sinyaller · canlı Jev değil", local: "Yerel demo · canlı Jev değil",
+    safety: "Güvenlik kuralı · Jev çağrılmadı", unavailable: "Jev erişilemedi", unknown: "Eski kayıt · sinyal kaynağı bilinmiyor" })[source] || "Sinyal kaynağı bilinmiyor";
+}
+
+function technicalTraceHtml(step) {
+  const d = step.decision || {};
+  const sig = step.signals;
+  const st = step.settings || S.settings;
+  return `
+    <p class="field-hint">${esc(signalSource(step))}${step.recomputed ? " · Saklı sinyallerle yeniden hesaplandı" : step.signal_source === "jev" ? ` · Jev yanıtı ${step.latency_ms} ms` : ""}</p>
+    <p class="trace-reason">${esc(d.reason)}</p>
+    ${sig ? `
+      <h3>Jev · typed sinyaller</h3>
+      <div class="bars">
+        ${barHtml("Kanıt yeterliliği · noul", sig.sufficient, { thr: st.tau_suff })}
+        ${barHtml("Kritik risk · noul", sig.critical, { thr: st.tau_crit, cls: "crit" })}
+        ${barHtml(`Aciliyet · score ${num(sig.priority?.score, 1)} / 3`, (sig.priority?.score || 0) / 3)}
+      </div>
+      <h3>Uzmanlık dağılımı · choice</h3>
+      <div class="bars">${Object.keys(S.catalog.nodes).map((id) => barHtml(nodeLabel(id), d.nodes?.[id] ?? 0,
+        { thr: st.tau_route, cls: `depth-${depth(id)}`, hit: id === d.target })).join("")}</div>
+      <p class="field-hint">Jev tek başına en olası ekip: <strong>${esc(nodeLabel(d.baseline_one_shot))}</strong>. Bu bir yönlendirme kararı değildir.</p>
+      <h3>RAEP · aday kanıt hesabı</h3>
+      <code>U(e) = L × Δerr − λ × C(e)</code>
+      <div class="table-scroll"><table class="mini-table">
+        <caption>Kanıt maliyeti ve güvenilirlik değerleri uzman varsayımıdır.</caption>
+        <thead><tr><th>Kanıt</th><th class="num">Beklenen risk azalması</th><th class="num">Maliyet C</th><th class="num">Net fayda U</th></tr></thead>
+        <tbody>${(d.candidates || []).map((x) => `<tr class="${x.id === d.evidence_id ? "chosen" : ""}">
+          <td>${esc(x.label)}${x.id === d.evidence_id ? " · Seçildi" : ""}</td><td class="num">${num(x.gain, 3)}</td>
+          <td class="num">${num(x.cost, 3)}</td><td class="num ${x.U > 0 ? "pos" : "neg"}">${num(x.U, 3)}</td></tr>`).join("")}</tbody>
+      </table></div>
+      ${Object.keys(d.skipped || {}).length ? `<h3>Neden diğer kanıtlar seçilmedi?</h3><ul class="skipped-evidence">${Object.entries(d.skipped).map(([id, reason]) => `<li>${esc(S.catalog.evidence[id]?.label || id)}: ${esc(reason)}</li>`).join("")}</ul>` : ""}
+      <p class="field-hint">Risk R=${num(d.risk, 3)} · Kayıp ağırlığı L=${num(d.loss_weight, 3)} · Hata=${num(d.err, 3)}</p>
+    ` : `<p>${d.safety_hits?.length ? "Güvenlik kuralı modelden önce çalıştı. Olasılık hesabına ihtiyaç duyulmadı." : "Bu adım için model sinyali yok. İnsan incelemesi gerekir."}</p>`}
+    ${sig ? `<details class="raw-signals"><summary>Ham sinyaller (JSON)</summary><pre>${esc(JSON.stringify(sig, null, 2))}</pre></details>` : ""}
+    <h3>Bu adımda kullanılan politika${step.settings ? "" : " · snapshot yok, güncel değerler"}</h3>
+    <div class="policy-snapshot">${Object.entries(st).map(([k, v]) => `<span><code>${esc(k)}</code> ${esc(v)}</span>`).join("")}</div>`;
+}
+
 function renderCaseDetail() {
   const container = $("#case-detail-view");
   if (!container) return;
-
   const c = S.cases.find((x) => x.id === S.selected);
   if (!c) {
-    container.innerHTML = `
-      <div class="empty-state">
-        <h3>Vaka bulunamadı</h3>
-        <p>Aradığınız <code>${esc(S.selected || "")}</code> numaralı servis vakası sistemde mevcut değil.</p>
-        <a href="#cases" class="btn btn-primary btn-sm">Vaka Listesine Dön</a>
-      </div>`;
+    container.innerHTML = `<div class="empty-state"><h1>Vaka bulunamadı</h1><p>${esc(S.selected || "")} kayıtlı değil.</p><a href="#cases" class="btn btn-primary">Vakalara dön</a></div>`;
     return;
   }
-
-  const step = c.steps?.at(-1) || { decision: {}, signals: null, latency_ms: 0 };
+  const step = c.steps?.at(-1) || { decision: {}, signals: null };
   const d = step.decision || {};
   const sig = step.signals;
-  const st = S.settings;
-  const cat = caseCategory(c);
+  const st = step.settings || S.settings;
+  const category = caseCategory(c);
   const team = suggestedTeamInfo(c);
-  const scenario = S.scenarios.find((s) => s.id === c.scenario_id);
+  const locked = ["confirmed", "approved", "overridden"].includes(c.review_status);
+  const critical = isCriticalCase(c);
+  const evId = c.pending_evidence;
+  const ev = S.catalog.evidence[evId];
+  const candidate = d.candidates?.find((x) => x.id === d.evidence_id);
+  const scenario = S.scenarios.find((x) => x.id === c.scenario_id);
+  const topId = d.baseline_one_shot;
+  const topProb = d.nodes?.[topId];
+  const previous = c.steps?.at(-2)?.signals;
+  const actionLabel = ({ REQUEST_EVIDENCE: "Kanıt iste", ROUTE: "Uzman ekibe yönlendir", ESCALATE: "İnsan uzmana aktar" })[d.action] || "Uzman incelemesi";
 
-  const topLeafId = d.target && d.target !== "expert_desk" ? d.target : d.baseline_one_shot;
-  const topProb = topLeafId && d.nodes ? d.nodes[topLeafId] : null;
-
-  const reqEvId = c.pending_evidence || d.evidence_id || d.candidates?.[0]?.id;
-  const reqEv = reqEvId ? S.catalog.evidence[reqEvId] : null;
-  const reqCand = d.candidates?.find((x) => x.id === reqEvId) || d.candidates?.[0];
-
-  // Human vs machine override indicator
-  const hasHumanOverride = ["confirmed", "approved", "overridden"].includes(c.review_status) && c.final;
-  const machineDiffers = hasHumanOverride && c.machine_recommendation && c.machine_recommendation.target !== c.final.target;
-
-  // Build Top "Sıradaki İşlem" Banner
-  let nextActionKicker = "Sıradaki İşlem";
-  let nextActionTitle = "";
-  let nextActionReason = "";
-  let nextActionBtnHtml = "";
-  let nextActionCls = "";
-
-  if (cat === "awaiting_evidence" && reqEv) {
-    nextActionKicker = "Sıradaki İşlem · Eksik Kanıt Bekleniyor";
-    nextActionTitle = `${reqEv.label} sonucunu ekleyin`;
-    nextActionReason = `Hedef uzman ekibi belirlemek için ${reqEv.informs.map(nodeLabel).join(" ve ")} olasılıklarının ayrıştırılması gerekiyor.`;
-    nextActionBtnHtml = `<button type="button" class="btn btn-primary btn-sm" data-open-ev-modal="${esc(reqEvId)}">Kanıt Ekle</button>`;
-    nextActionCls = "is-warning";
-  } else if (cat === "expert_review") {
-    nextActionKicker = "Sıradaki İşlem · İnsan Uzman Onayı Gerekli";
-    nextActionTitle = isCriticalCase(c) ? "Kritik güvenlik eskalasyonunu inceleyin" : "Yönlendirme kararını onaylayın";
-    nextActionReason = d.safety_hits?.length
-      ? `Güvenlik kuralı tetiklendi (${d.safety_hits.join(", ")}). Otomatik yönlendirme durduruldu.`
-      : (d.reason || "Belirsizlik veya risk eşiği aşıldı; insan uzman teyidi gerekiyor.");
-    nextActionBtnHtml = team.id === "expert_desk"
-      ? `<button type="button" class="btn btn-primary btn-sm" data-open-override="approve">Uzman Kararı Ver / Yönlendir</button>`
-      : `<button type="button" class="btn btn-primary btn-sm" data-open-override="approve">Öneriyi Onayla (${esc(team.label)})</button>`;
-    nextActionCls = "is-critical";
-  } else if (cat === "inspecting") {
-    nextActionKicker = "Sıradaki İşlem · Yönlendirme Teyidi";
-    nextActionTitle = `${team.label} ekibine devri onaylayın`;
-    nextActionReason = `Kanıt yeterliliği (${sig ? pct(sig.sufficient) : "—"}) ve uzmanlık olasılığı eşiği aşıldı.`;
-    nextActionBtnHtml = `<button type="button" class="btn btn-primary btn-sm" data-case-action="confirm_route">Yönlendirmeyi Onayla</button>`;
-    nextActionCls = "";
+  let title, actionHtml, actionNote;
+  if (category === "awaiting_evidence" && ev) {
+    title = ev.label;
+    actionNote = `Önce bu sonucu ekleyin. RAEP, yeni bilgiyle sıradaki kararı tekrar hesaplar.`;
+    actionHtml = `<form id="next-evidence-form" class="next-evidence-form">
+      <label for="next-evidence-result">Ölçüm veya gözlem sonucu</label>
+      <textarea id="next-evidence-result" name="result" rows="3" minlength="2" maxlength="2000" required placeholder="Ölçülen değeri ve koşulunu yazın…" aria-describedby="next-evidence-error"></textarea>
+      <p id="next-evidence-error" class="field-error" role="alert"></p>
+      <div class="action-form-footer">
+        ${scenario?.answers?.[evId] ? `<button type="button" class="btn btn-secondary btn-sm" id="fill-next-evidence">Demo yanıtını doldur</button>` : ""}
+        <button type="submit" class="btn btn-primary" id="submit-next-evidence">Kanıtı ekle ve değerlendir</button>
+      </div>
+    </form>`;
+  } else if (category === "expert_review") {
+    title = critical ? "Güvenlik incelemesi gerekli" : "Kararı insan uzman versin";
+    actionNote = critical ? "Otomatik yönlendirme durduruldu. Riskli saha testi yapılmaz; kararı yetkili uzman verir." : "Otomatik karar için yeterli dayanak yok. Hedef ekibi uzman seçer.";
+    actionHtml = `<button type="button" class="btn btn-primary" data-open-override="approve">Uzman kararı ver</button>`;
+  } else if (category === "inspecting") {
+    title = team.label;
+    actionNote = "RAEP yönlendirmeyi önerdi. Onayınızla vaka bu ekibe devredilir.";
+    actionHtml = `<button type="button" class="btn btn-primary" data-case-action="confirm_route">Yönlendirmeyi onayla</button>`;
   } else {
-    nextActionKicker = "İşlem Durumu · Yönlendirildi";
-    nextActionTitle = `Vaka ${team.label} uzman ekibine devredildi`;
-    nextActionReason = `Operasyonel yönlendirme kararı kayıt altına alındı.`;
-    nextActionBtnHtml = `<button type="button" class="btn btn-secondary btn-sm" data-open-override="override">Ekibi Değiştir (Override)</button>`;
-    nextActionCls = "";
+    title = team.label;
+    actionNote = "İnsan onayıyla yönlendirildi. Atama kaydı korunur.";
+    actionHtml = `<a href="#queues" class="btn btn-secondary">Ekip kuyruğunu gör</a>`;
   }
-
-  const nextActionBannerHtml = `
-    <section class="next-action-banner ${nextActionCls}" aria-label="Sıradaki İşlem Özeti">
-      <div class="next-action-info">
-        <div class="next-action-kicker">${esc(nextActionKicker)}</div>
-        <div class="next-action-title">${esc(nextActionTitle)}</div>
-        <div class="next-action-reason">${esc(nextActionReason)}</div>
-      </div>
-      <div class="next-action-cta">
-        ${nextActionBtnHtml}
-      </div>
-    </section>
-  `;
-
-  // Missing evidence box
-  let missingEvidenceHtml = "";
-  if (c.status === "awaiting_evidence" && reqEv) {
-    const informsLabels = (reqEv.informs || []).map(nodeLabel).join(" ile ");
-    missingEvidenceHtml = `
-      <div class="missing-evidence-card">
-        <div class="me-header">
-          <span class="badge badge-accent">Öncelikli Kanıt Talebi</span>
-          <span class="mono text-secondary" style="font-size:0.75rem">Adım ${c.evidence.length + 1} / ${st.max_requests}</span>
-        </div>
-        <div class="me-title">${esc(reqEv.label)} sonucunu ekleyin.</div>
-        <p class="me-explanation">
-          Bu kanıt, <strong>${esc(informsLabels)}</strong> olasılıkları arasındaki belirsizliği en düşük operasyonel maliyetle ayırmaya yardımcı olur.
-        </p>
-        <div class="me-metrics">
-          <span>Tahmini süre: ~${reqEv.T} dk</span>
-          <span>·</span>
-          <span>Efor: ${reqEv.E}/5</span>
-          <span>·</span>
-          <span>Güvenilirlik ρ=${reqEv.rho}</span>
-          ${reqCand ? `<span>·</span><span>Net fayda U = +${num(reqCand.U, 3)}</span>` : ""}
-        </div>
-        <div style="margin-top:4px">
-          <button type="button" class="btn btn-primary" style="width:100%" data-open-ev-modal="${esc(reqEvId)}">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
-            <span>Kanıt Ekle</span>
-          </button>
-        </div>
-      </div>
-    `;
-  } else {
-    missingEvidenceHtml = `
-      <div class="missing-evidence-card sufficient-state">
-        <div class="me-header">
-          <span class="badge badge-routed">Kanıt Durumu</span>
-        </div>
-        <div class="me-title">
-          ${isCriticalCase(c) ? "Güvenlik nedeniyle saha testi durduruldu" : "Yönlendirme için mevcut kanıtlar yeterli"}
-        </div>
-        <p class="me-explanation">
-          ${isCriticalCase(c)
-            ? "Kritik güvenlik uyarısı bulunan vakalarda teknisyenden ek saha denemesi istenmez; yalnızca güvenli belge/fotoğraf eklenebilir."
-            : "Toplanan ölçümler ve arıza kodları hedef uzmanlık eşiğini karşıladığı için ek kanıt talebine gerek duyulmadı."}
-        </p>
-        <div>
-          <button type="button" class="btn btn-subtle btn-sm" data-open-ev-modal="${esc(reqEvId || "connector_photo")}">
-            + Ek Ölçüm veya Gözlem Ekle
-          </button>
-        </div>
-      </div>
-    `;
-  }
-
-  // Risk & Human Approval Box
-  let riskApprovalHtml = "";
-  if (cat === "expert_review") {
-    riskApprovalHtml = `
-      <div class="risk-approval-box is-critical" role="alert">
-        <div class="risk-approval-head">
-          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
-          <span>Uzman onayı gerekli</span>
-        </div>
-        <p class="risk-approval-desc">
-          ${d.safety_hits?.length
-            ? `Vaka açıklamasında güvenlik açısından kritik ifade (${esc(d.safety_hits.join(", "))}) yer aldığı için otomatik yönlendirme durduruldu.`
-            : `Kritik risk olasılığı veya belirsizlik eşiği aşıldığı için yönlendirme kararı insan uzman tarafından onaylanmalıdır.`}
-        </p>
-      </div>
-    `;
-  } else if (cat === "awaiting_evidence") {
-    riskApprovalHtml = `
-      <div class="risk-approval-box is-warning">
-        <div class="risk-approval-head">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
-          <span>Kanıt tamamlanmadan otomatik yönlendirme önerilmez</span>
-        </div>
-        <p class="risk-approval-desc">
-          Mevcut kanıt yeterliliği (${sig ? pct(sig.sufficient) : "—"}) hedef eşiğin (${pct(st.tau_suff)}) altında. Yanlış ekibe yönlendirme riskini düşürmek için önce önerilen kanıtı ekleyin.
-        </p>
-      </div>
-    `;
-  } else if (cat === "inspecting") {
-    riskApprovalHtml = `
-      <div class="risk-approval-box">
-        <div class="risk-approval-head" style="color:var(--info)">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
-          <span>Yönlendirme önerisi hazır</span>
-        </div>
-        <p class="risk-approval-desc">
-          Kanıt yeterliliği ve uzmanlık olasılığı eşikleri karşılandı. Önerilen <strong>${esc(team.label)}</strong> yönlendirmesini onaylayarak vakayı devredebilirsiniz.
-        </p>
-      </div>
-    `;
-  } else {
-    riskApprovalHtml = `
-      <div class="risk-approval-box">
-        <div class="risk-approval-head" style="color:var(--accent)">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
-          <span>Yönlendirme kararı kesinleşti</span>
-        </div>
-        <p class="risk-approval-desc">
-          Vaka <strong>${esc(team.label)}</strong> uzman ekibine yönlendirildi.
-        </p>
-      </div>
-    `;
-  }
-
-  // Decision Actions Stack
-  let stateActionsHtml = "";
-  if (cat === "awaiting_evidence") {
-    stateActionsHtml = `
-      <div class="decision-actions">
-        <button type="button" class="btn btn-warning" data-case-action="request_evidence">
-          Kanıt Talebini Kaydet
-        </button>
-        <div class="decision-actions-secondary">
-          <button type="button" class="btn btn-secondary btn-sm" data-case-action="escalate">Uzman Masasına Gönder</button>
-          <button type="button" class="btn btn-secondary btn-sm" data-open-override="override">Ekibi Değiştir (Override)</button>
-        </div>
-      </div>
-    `;
-  } else if (cat === "expert_review") {
-    stateActionsHtml = `
-      <div class="decision-actions">
-        <button type="button" class="btn btn-primary" data-open-override="approve">
-          ${team.id === "expert_desk" ? "Uzman Yönlendirme Kararı Ver" : "Önerilen Yönlendirmeyi Onayla"}
-        </button>
-        <div class="decision-actions-secondary">
-          <button type="button" class="btn btn-secondary btn-sm" data-open-override="override">Farklı Ekibe Yönlendir</button>
-          <button type="button" class="btn btn-secondary btn-sm" data-case-action="request_evidence">Güvenli Belge İste</button>
-        </div>
-      </div>
-    `;
-  } else if (cat === "inspecting") {
-    stateActionsHtml = `
-      <div class="decision-actions">
-        <button type="button" class="btn btn-primary" data-case-action="confirm_route">
-          Yönlendirmeyi Onayla (${esc(team.label)})
-        </button>
-        <div class="decision-actions-secondary">
-          <button type="button" class="btn btn-secondary btn-sm" data-case-action="escalate">Uzman Masasına Gönder</button>
-          <button type="button" class="btn btn-secondary btn-sm" data-open-override="override">Farklı Ekibe Yönlendir</button>
-        </div>
-      </div>
-    `;
-  } else {
-    stateActionsHtml = `
-      <div class="decision-actions">
-        <div class="decision-actions-secondary">
-          <button type="button" class="btn btn-secondary btn-sm" data-open-override="override">Farklı Ekibe Yönlendir</button>
-          <button type="button" class="btn btn-secondary btn-sm" data-case-action="escalate">Uzman Masasına Aktar</button>
-        </div>
-      </div>
-    `;
-  }
-
-  // Technical Explainability Accordion
-  let techAccordionHtml = "";
-  if (sig) {
-    techAccordionHtml = `
-      <details class="tech-details">
-        <summary>
-          <span>RAEP &amp; Jev Olasılık Dağılımı ve Kanıt Fayda Tablosu</span>
-          <span class="mono">R=${num(d.risk, 3)} · L=${num(d.loss_weight, 2)}</span>
-        </summary>
-        <div class="tech-details-body">
-          <div>
-            <div class="analysis-label" style="margin-bottom:6px">
-              <span>Jev Anlamsal Sensör Sinyalleri</span>
-              <span class="mono">${step.latency_ms} ms</span>
-            </div>
-            <div class="bars">
-              ${barHtml("Kanıt yeterliliği (sufficient)", sig.sufficient, { thr: st.tau_suff, cls: "suff" })}
-              ${barHtml("Kritik güvenlik riski (critical)", sig.critical, { thr: st.tau_crit, cls: "crit" })}
-              ${barHtml(`Aciliyet skoru (${num(sig.priority?.score, 1)} / 3)`, (sig.priority?.score || 0) / 3)}
-            </div>
-          </div>
-
-          <div>
-            <div class="analysis-label" style="margin-bottom:6px">
-              <span>Hiyerarşik Uzmanlık Ağacı Olasılıkları P(düğüm)</span>
-              <span class="mono">τ_route=${st.tau_route}</span>
-            </div>
-            <div class="bars">
-              ${Object.keys(S.catalog.nodes).map((k) => barHtml(nodeLabel(k), d.nodes?.[k] ?? 0, {
-                thr: st.tau_route,
-                cls: `depth-${depth(k)}`,
-                hit: k === d.target || k === topLeafId,
-              })).join("")}
-            </div>
-            ${d.baseline_one_shot ? `<p class="field-hint" style="margin-top:6px">Baseline C (Jev tek-shot argmax): <strong>${esc(nodeLabel(d.baseline_one_shot))}</strong></p>` : ""}
-          </div>
-
-          ${d.candidates?.length ? `
-            <div>
-              <div class="analysis-label" style="margin-bottom:6px">
-                <span>Aday Kanıtlar · U(e) = L·Δerr − λ·C</span>
-              </div>
-              <table class="mini-table">
-                <thead>
-                  <tr><th>Kanıt</th><th class="num">ΔRisk</th><th class="num">Maliyet C</th><th class="num">Net U</th></tr>
-                </thead>
-                <tbody>
-                  ${d.candidates.slice(0, 6).map((x) => `
-                    <tr class="${x.id === d.evidence_id ? "chosen" : ""}">
-                      <td>${esc(x.label)}</td>
-                      <td class="num">${num(x.gain, 3)}</td>
-                      <td class="num">${num(x.cost, 3)}</td>
-                      <td class="num ${x.U > 0 ? "pos" : "neg"}">${num(x.U, 3)}</td>
-                    </tr>
-                  `).join("")}
-                </tbody>
-              </table>
-            </div>
-          ` : ""}
-
-          <div style="display:flex;justify-content:flex-end">
-            <button type="button" class="btn btn-subtle btn-xs" id="recompute-btn">
-              Güncel Politika Ayarlarıyla Yeniden Hesapla
-            </button>
-          </div>
-        </div>
-      </details>
-    `;
-  }
-
-  // Attachments
-  const attachments = c.attachments || [];
-  const attachmentsHtml = attachments.length
-    ? `<div class="attachment-previews">
-        ${attachments.map((att) => `
-          <div class="att-card">
-            <button type="button" class="att-thumb-btn" data-preview-img="${esc(att.data_url)}" data-preview-cap="${esc(att.caption || att.name)}" aria-label="${esc(att.name)} görselini büyüt">
-              <img class="att-thumb" src="${esc(att.data_url)}" alt="${esc(att.caption || att.name)}">
-            </button>
-            <div class="att-meta">
-              <span title="${esc(att.caption || att.name)}">${esc(att.caption || att.name)}</span>
-            </div>
-          </div>
-        `).join("")}
-      </div>`
-    : `<p class="field-hint" style="margin-top:8px">Henüz bu vakaya ait fotoğraf yüklenmedi.</p>`;
-
-  // Timeline
-  const timelineHtml = `
-    <ol class="evidence-timeline">
-      <li class="ev-timeline-item initial">
-        <div class="ev-timeline-head">
-          <strong>Başlangıç Vaka Bildirimi ve İlk Gözlem</strong>
-          <time>${esc(formatTime(c.created_at))}</time>
-        </div>
-        <div class="ev-timeline-body">
-          ${esc(c.technician_note)}
-          ${c.initial_measurements ? `<div style="margin-top:4px;color:var(--text-primary)"><strong>İlk Ölçüm:</strong> ${esc(c.initial_measurements)}</div>` : ""}
-        </div>
-      </li>
-      ${(c.evidence || []).map((ev, i) => `
-        <li class="ev-timeline-item">
-          <div class="ev-timeline-head">
-            <strong>Toplanan Kanıt #${i + 1}: ${esc(ev.label)}</strong>
-            <time>${esc(formatTime(ev.at))}</time>
-          </div>
-          <div class="ev-timeline-body">${esc(ev.result)}</div>
-        </li>
-      `).join("")}
-    </ol>
-  `;
-
-  // Audit trail
-  const auditItems = c.audit?.length
-    ? c.audit
-    : [{ at: c.created_at, actor: "Sistem (RAEP)", action: d.action || "Değerlendirildi", detail: d.reason || "İlk analiz tamamlandı." }];
 
   container.innerHTML = `
-    <div class="detail-top-bar">
-      <div class="detail-title-group">
-        <a href="#cases" class="btn btn-subtle btn-sm">← Vakalar</a>
-        <span class="detail-id">${esc(c.id)}</span>
-        ${statusBadgeHtml(c)}
-        ${priorityBadgeHtml(c)}
-        ${scenario ? `<span class="badge badge-neutral" title="Sentetik Demo Senaryosu">Demo: ${esc(scenario.title)}</span>` : ""}
-      </div>
-      <div style="display:flex;gap:8px;align-items:center">
-        <button type="button" class="btn btn-secondary btn-sm" data-open-ev-modal="${esc(reqEvId || "connector_photo")}">
-          + Kanıt / Ölçüm Gir
-        </button>
-      </div>
+    <header class="case-heading">
+      <div class="detail-title-group"><a href="#cases" class="btn btn-subtle btn-sm">Vakalara dön</a><span class="mono">${esc(c.id)}</span>${statusBadgeHtml(c)}${priorityBadgeHtml(c)}</div>
+      <h1>${esc(c.vehicle.family)}</h1>
+      <p class="case-complaint">${esc(c.technician_note)}</p>
+      <div class="case-context-line"><span>${Number(c.vehicle.km).toLocaleString("tr-TR")} km</span><span>${esc(c.vehicle.location || "Servis belirtilmedi")}</span>${(c.dtc_codes || []).map((code) => `<span class="dtc-chip">${esc(code)}</span>`).join("")}</div>
+    </header>
+
+    <div class="decision-workbench">
+      <section class="decision-explanation" aria-label="Jev ve RAEP karar izi">
+        <section class="sensor-stage">
+          <div class="stage-heading"><h2>Jev <span>olasılık üretir</span></h2><span class="signal-source">${esc(signalSource(step))}</span></div>
+          ${sig ? `
+            <div class="signal-leading"><span>En olası uzmanlık</span><strong>${esc(nodeLabel(topId))} <span class="mono">${pct(topProb)}</span></strong></div>
+            <div class="bars">
+              ${barHtml("Kanıt yeterliliği", sig.sufficient, { thr: st.tau_suff })}
+              ${barHtml("Kritik risk", sig.critical, { thr: st.tau_crit, cls: "crit" })}
+            </div>
+            ${previous ? `<p class="signal-change">Önceki adımda yeterlilik ${pct(previous.sufficient)}, şimdi <strong>${pct(sig.sufficient)}</strong>.</p>` : ""}
+            <p class="field-hint">${step.signal_source === "jev" && !step.recomputed ? `Jev yanıtı ${step.latency_ms} ms. ` : ""}Olasılıklar yönlendirme kararı değildir.</p>
+          ` : `<p class="stage-message">${d.safety_hits?.length ? `“${esc(d.safety_hits.join(", "))}” güvenlik kuralını tetikledi. Model çağrısı atlandı.` : "Model sinyali bulunmuyor. Otomatik karar yerine insan incelemesi gerekir."}</p>`}
+        </section>
+        <section class="policy-stage">
+          <div class="stage-heading"><h2>RAEP <span>kararı verir</span></h2><span class="badge ${d.action === "ESCALATE" ? "badge-escalated" : "badge-accent"}">${esc(d.action || "ESCALATE")}</span></div>
+          <p class="policy-outcome">${esc(actionLabel)}</p>
+          ${candidate && d.action === "REQUEST_EVIDENCE" ? `
+            <p>Bu adımda en yüksek net fayda <strong>${esc(candidate.label)}</strong> kanıtında.</p>
+            <div class="value-equation" aria-label="RAEP net fayda hesabı">
+              <div><span>Beklenen risk azalması</span><strong>${num(candidate.gain, 3)}</strong></div>
+              <span aria-hidden="true">−</span>
+              <div><span>Ağırlıklı maliyet</span><strong>${num(st.lambda, 2)} × ${num(candidate.cost, 3)}</strong></div>
+              <span aria-hidden="true">=</span>
+              <div class="value-result"><span>Net fayda U</span><strong>${num(candidate.U, 3)}</strong></div>
+            </div><p class="field-hint">Maliyet ve güvenilirlik uzman varsayımıdır; gerçek saha tasarrufu değildir.</p>
+          ` : `<p class="policy-reason">${esc(d.reason || "İnsan uzman değerlendirmesi bekleniyor.")}</p>`}
+          <a href="#policy" class="inline-link">RAEP politikasını incele</a>
+        </section>
+      </section>
+
+      <section class="next-action-panel ${critical ? "is-critical" : ""}" aria-labelledby="next-action-heading">
+        <div class="stage-heading"><h2 id="next-action-heading" tabindex="-1">${locked ? "Yönlendirme tamamlandı" : "Sıradaki işlem"}</h2><span class="step-count">Adım ${c.steps?.length || 1}</span></div>
+        <h3 class="action-title">${esc(title)}</h3>
+        <p class="action-note">${esc(actionNote)}</p>
+        ${ev && category === "awaiting_evidence" ? `<p class="field-hint">Tahmini ${ev.T} dk · Efor ${ev.E}/5 · Katalog varsayımı</p>` : ""}
+        ${actionHtml}
+        ${locked && c.machine_recommendation ? `<p class="human-lock-note">Son makine önerisi: ${esc(c.machine_recommendation.action)}${c.machine_recommendation.target_label ? ` · ${esc(c.machine_recommendation.target_label)}` : ""}. İnsan ataması değişmedi.</p>` : ""}
+        <details class="secondary-actions"><summary>Diğer işlemler</summary><div>
+          ${!locked ? `<button type="button" class="btn btn-secondary btn-sm" data-open-ev-modal="${esc(evId || "connector_photo")}">${critical ? "Güvenli belge ekle" : "Farklı kanıt / görsel ekle"}</button>` : ""}
+          ${category !== "expert_review" ? `<button type="button" class="btn btn-secondary btn-sm" data-case-action="escalate">Uzman masasına aktar</button>` : ""}
+          <button type="button" class="btn btn-subtle btn-sm" data-open-override="override">Gerekçeli ekip değişikliği</button>
+        </div></details>
+      </section>
     </div>
 
-    ${nextActionBannerHtml}
+    <div class="case-disclosures">
+      <details class="case-disclosure" id="technical-details"><summary>Teknik karar izi <span>${c.steps?.length || 0} adım · olasılıklar ve kanıt karşılaştırması</span></summary>
+        <div class="disclosure-body">
+          <div class="trace-toolbar"><div class="field"><label for="trace-step">İncelenecek karar adımı</label>
+            <select id="trace-step">${(c.steps || []).map((x, i) => `<option value="${i}" ${i === c.steps.length - 1 ? "selected" : ""}>Adım ${i + 1} · ${esc(x.decision?.action)}${x.recomputed ? " · yeniden hesaplama" : ""}</option>`).join("")}</select></div>
+            <button type="button" class="btn btn-secondary btn-sm" id="recompute-btn">Güncel politikayla yeniden hesapla</button>
+          </div><p class="field-hint">Yeniden hesaplama Jev çağırmaz; geçmişi ve insan atamasını korur.</p>
+          <div id="technical-trace" class="technical-trace">${technicalTraceHtml(step)}</div>
+        </div>
+      </details>
+      <details class="case-disclosure"><summary>Kanıt ve karar geçmişi <span>${(c.evidence || []).length} kanıt · ${(c.audit || []).length} işlem</span></summary>
+        <div class="disclosure-body history-columns">
+          <div><h3>Toplanan kanıtlar</h3>${(c.evidence || []).length ? `<ol class="evidence-timeline">${c.evidence.map((x) => `<li class="ev-timeline-item"><strong>${esc(x.label)}</strong><p>${esc(x.result)}</p><time>${esc(formatTime(x.at))}</time></li>`).join("")}</ol>` : `<p class="text-secondary">Henüz ek kanıt toplanmadı.</p>`}</div>
+          <div><h3>İşlem kaydı</h3><ol class="audit-trail">${(c.audit || []).map((x) => `<li class="audit-item"><div class="audit-head"><strong>${esc(x.action)}</strong><time>${esc(formatTime(x.at))}</time></div><p>${esc(x.detail)}</p><span class="field-hint">${esc(x.actor)}</span></li>`).join("")}</ol></div>
+        </div>
+      </details>
+      <details class="case-disclosure"><summary>Araç bilgileri ve ekler <span>${(c.attachments || []).length} görsel</span></summary>
+        <div class="disclosure-body">
+          <dl class="vehicle-summary-grid"><div class="summary-kv"><dt>VIN</dt><dd>${esc(c.vehicle.vin || "Belirtilmedi")}</dd></div><div class="summary-kv"><dt>Tahrik</dt><dd>${c.vehicle.fuel === "electric" ? "Elektrik" : "Dizel"}</dd></div><div class="summary-kv"><dt>İlk ölçümler</dt><dd>${esc(c.initial_measurements || "Belirtilmedi")}</dd></div><div class="summary-kv"><dt>Servis geçmişi</dt><dd>${esc(c.recent_repairs || "Belirtilmedi")}</dd></div></dl>
+          <p class="field-hint">Görseller uzman referansıdır. Otomatik görüntü analizi yapılmaz.</p>
+          <div class="attachment-previews">${(c.attachments || []).map((x) => `<div class="att-card"><button type="button" class="att-thumb-btn" data-preview-img="${esc(x.data_url)}" data-preview-cap="${esc(x.caption || x.name)}" aria-label="${esc(x.name)} görselini büyüt"><img class="att-thumb" width="240" height="140" loading="lazy" src="${esc(x.data_url)}" alt="${esc(x.caption || x.name)}"></button><span>${esc(x.caption || x.name)}</span></div>`).join("")}</div>
+        </div>
+      </details>
+    </div>`;
 
-    <div class="detail-grid">
-      <!-- LEFT 60%: Case & Evidence Details -->
-      <div class="detail-left-col">
-        <section class="card" aria-labelledby="veh-sum-h">
-          <div class="section-header" style="margin-bottom:8px">
-            <h2 id="veh-sum-h">${esc(c.vehicle.family)}</h2>
-            <span class="mono text-secondary">${esc(c.vehicle.vin || "VIN Belirtilmedi")}</span>
-          </div>
-          <dl class="vehicle-summary-grid">
-            <div class="summary-kv"><dt>Tahrik / Yakıt</dt><dd>${c.vehicle.fuel === "electric" ? "Elektrik (HV)" : "Dizel (ICE)"}</dd></div>
-            <div class="summary-kv"><dt>Kilometre</dt><dd class="mono">${Number(c.vehicle.km).toLocaleString("tr-TR")} km</dd></div>
-            <div class="summary-kv"><dt>Servis Noktası</dt><dd>${esc(c.vehicle.location || "Merkez Yetkili Servis")}</dd></div>
-            <div class="summary-kv"><dt>Son Güncelleme</dt><dd class="mono">${esc(formatTime(c.updated_at || c.created_at))}</dd></div>
-          </dl>
-        </section>
-
-        <section class="card" aria-labelledby="prob-desc-h">
-          <h2 id="prob-desc-h">Arıza Açıklaması ve Teknisyen Notları</h2>
-          <div class="problem-block">${esc(c.technician_note)}</div>
-          ${c.initial_measurements ? `
-            <div style="margin-top:12px">
-              <h3>İlk Ölçümler ve Gözlemler</h3>
-              <p class="text-secondary" style="margin-top:4px">${esc(c.initial_measurements)}</p>
-            </div>
-          ` : ""}
-          <div class="detail-subgrid">
-            <div>
-              <h3>Arıza Kodları (DTC)</h3>
-              <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:6px">
-                ${c.dtc_codes?.length
-                  ? c.dtc_codes.map((code) => `<span class="dtc-chip">${esc(code)}</span>`).join("")
-                  : `<span class="text-secondary">Aktif veya kayıtlı DTC kodu bildirilmedi.</span>`}
-              </div>
-            </div>
-            <div>
-              <h3>Araç Servis Geçmişi</h3>
-              <p class="text-secondary" style="margin-top:6px">${esc(c.recent_repairs || "Yakın tarihli onarım kaydı bildirilmedi.")}</p>
-            </div>
-          </div>
-        </section>
-
-        <section class="card" aria-labelledby="photos-h">
-          <div class="section-header" style="margin-bottom:4px">
-            <div>
-              <h2 id="photos-h">Yüklenen Fotoğraflar ve Görsel Kanıtlar</h2>
-              <p class="section-subtitle">Saha teknisyeni tarafından eklenen görsel kayıtlar</p>
-            </div>
-            <button type="button" class="btn btn-subtle btn-xs" data-open-ev-modal="connector_photo">+ Fotoğraf Ekle</button>
-          </div>
-          ${attachmentsHtml}
-        </section>
-
-        <section class="card" aria-labelledby="ev-tl-h">
-          <div class="section-header" style="margin-bottom:4px">
-            <div>
-              <h2 id="ev-tl-h">Kanıt Zaman Çizelgesi</h2>
-              <p class="section-subtitle">Vaka açılışından itibaren kaydedilen adımlar (${(c.evidence?.length || 0) + 1} kayıt)</p>
-            </div>
-          </div>
-          ${timelineHtml}
-        </section>
-      </div>
-
-      <!-- RIGHT 40%: ServicePilot Decision Panel -->
-      <aside class="detail-right-col" aria-label="ServicePilot Karar Paneli">
-        <section class="analysis-panel">
-          <div class="analysis-panel-head">
-            <div class="analysis-title-wrap">
-              <span class="analysis-icon" aria-hidden="true">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 2 7 12 12 22 7 12 2"></polygon><polyline points="2 17 12 22 22 17"></polyline><polyline points="2 12 12 17 22 12"></polyline></svg>
-              </span>
-              <div>
-                <h2>ServicePilot Analizi</h2>
-                <span class="field-hint">Adım ${c.steps?.length || 1}${step.recomputed ? " · Yeniden hesaplandı" : ""}</span>
-              </div>
-            </div>
-            <span class="badge badge-neutral mono">${sig ? `${step.latency_ms} ms` : "Safety Gate"}</span>
-          </div>
-
-          <!-- 1. Hedef / Önerilen Uzman Ekip -->
-          <div class="analysis-block">
-            <div class="analysis-label">
-              <span>Hedef Uzman Ekip</span>
-              ${topProb != null ? `<span class="mono">Güven: ${pct(topProb)}</span>` : ""}
-            </div>
-            <div class="specialist-box">
-              <div class="specialist-name">
-                <span>${esc(team.label)}</span>
-                ${c.review_status === "confirmed" || c.review_status === "approved"
-                  ? `<span class="badge badge-routed">Onaylandı</span>`
-                  : c.review_status === "overridden"
-                  ? `<span class="badge badge-warning">Değiştirildi (Override)</span>`
-                  : c.review_status === "pending_confirmation"
-                  ? `<span class="badge badge-inspecting">Önerildi · Onay Bekliyor</span>`
-                  : `<span class="badge badge-escalated">Uzman Onayında</span>`}
-              </div>
-              <span class="specialist-path">${esc(hierarchyPath(team.id))}</span>
-              ${machineDiffers ? `
-                <div class="callout-bar warning-bar" style="margin-top:8px;padding:8px 10px;font-size:0.78rem">
-                  <strong>İnsan Tercihi Korundu:</strong> Uzman kararı <em>${esc(c.final.target_label)}</em> olarak kayıtlı. Güncel politika algoritması <em>${esc(c.machine_recommendation.target_label)}</em> öneriyor.
-                </div>
-              ` : ""}
-            </div>
-          </div>
-
-          <!-- 2. Değerlendirme Gerekçesi -->
-          <div class="analysis-block">
-            <div class="analysis-label">
-              <span>Değerlendirme Gerekçesi</span>
-            </div>
-            <div class="rationale-text">${esc(d.reason || "Vaka analizi tamamlandı.")}</div>
-          </div>
-
-          <!-- 3. Eksik Kanıt (Signature Feature) -->
-          <div class="analysis-block">
-            <div class="analysis-label">
-              <span>Eksik Kanıt Durumu</span>
-              ${sig ? `<span class="mono">Yeterlilik: ${pct(sig.sufficient)}</span>` : ""}
-            </div>
-            ${missingEvidenceHtml}
-          </div>
-
-          <!-- 4. Risk ve İnsan Onayı -->
-          <div class="analysis-block">
-            <div class="analysis-label">
-              <span>Risk ve Onay Durumu</span>
-            </div>
-            ${riskApprovalHtml}
-          </div>
-
-          <!-- 5. Duruma Bağlı Aksiyonlar -->
-          ${stateActionsHtml}
-
-          <!-- 6. Karar Geçmişi (Audit Trail) -->
-          <div class="analysis-block" style="padding-top:6px;border-top:1px solid var(--border)">
-            <div class="analysis-label">
-              <span>Karar Geçmişi</span>
-              <span class="mono">${auditItems.length} işlem</span>
-            </div>
-            <ol class="audit-trail">
-              ${auditItems.map((a) => `
-                <li class="audit-item">
-                  <div class="audit-head">
-                    <span>${esc(a.action)}</span>
-                    <time>${esc(formatTime(a.at))}</time>
-                  </div>
-                  <div class="audit-actor">${esc(a.actor)}</div>
-                  <div class="audit-detail">${esc(a.detail)}</div>
-                </li>
-              `).join("")}
-            </ol>
-          </div>
-
-          <!-- 7. RAEP & Jev Teknik Detayları -->
-          ${techAccordionHtml}
-        </section>
-      </aside>
-    </div>
-  `;
-
+  $("#trace-step")?.addEventListener("change", (e) => {
+    $("#technical-trace").innerHTML = technicalTraceHtml(c.steps[Number(e.target.value)]);
+  });
   $("#recompute-btn")?.addEventListener("click", (e) => busy(e.currentTarget, "Hesaplanıyor…", async () => {
     upsertCase(await api(`/cases/${c.id}/recompute`, { method: "POST" }));
-    toast("Karar güncel RAEP politika ayarlarıyla yeniden hesaplandı.");
+    $("#technical-details").open = true;
+    toast("RAEP yeniden hesaplandı. Yeni Jev çağrısı yapılmadı.");
   }));
+  $("#fill-next-evidence")?.addEventListener("click", () => {
+    $("#next-evidence-result").value = scenario.answers[evId];
+    $("#next-evidence-result").focus();
+  });
+  $("#next-evidence-form")?.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const input = $("#next-evidence-result");
+    const error = $("#next-evidence-error");
+    const result = input.value.trim();
+    if (result.length < 2) { error.textContent = "En az 2 karakterlik bir sonuç yazın."; input.focus(); return; }
+    error.textContent = "";
+    await busy($("#submit-next-evidence"), "Kanıt değerlendiriliyor…", async () => {
+      try {
+        const updated = await api(`/cases/${c.id}/evidence`, { method: "POST", body: { evidence_id: evId, result } });
+        upsertCase(updated);
+        $("#next-action-heading")?.focus();
+        toast("Kanıt kaydedildi. Sıradaki karar güncellendi.");
+      } catch (err) { error.textContent = err.message; input.focus(); }
+    });
+  });
 }
 
 // ---------- SCREEN E: Uzman İncelemesi (Expert Review, Queues, Policy & Replay) ----------
@@ -2354,53 +1992,14 @@ function renderExpertReview() {
 
     return `
       <article class="review-card ${isCrit ? "" : "is-confirmation"}">
-        <div class="review-card-top">
-          <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
-            <span class="mono" style="font-weight:600;font-size:1rem">${esc(c.id)}</span>
-            <strong>${esc(c.vehicle.family)}</strong>
-            <span class="mono text-secondary">${esc(c.vehicle.vin || "")}</span>
-            ${priorityBadgeHtml(c)}
-            <span class="badge ${stCls}">${esc(stLbl)}</span>
-          </div>
-          <span class="mono text-secondary" style="font-size:0.78rem">${esc(formatTime(c.updated_at || c.created_at))}</span>
-        </div>
-
-        <div class="review-card-grid">
-          <div class="review-col">
-            <h4>Eskalasyon / İnceleme Gerekçesi</h4>
-            <p>${esc(reasonText)}</p>
-          </div>
-          <div class="review-col">
-            <h4>Mevcut Kanıtlar (${(c.evidence?.length || 0) + 1})</h4>
-            <p>${esc(c.technician_note)}</p>
-            <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:6px">
-              ${(c.dtc_codes || []).map((code) => `<span class="dtc-chip">${esc(code)}</span>`).join("")}
-              ${(c.evidence || []).map((e) => `<span class="badge badge-neutral">${esc(e.label)}</span>`).join("")}
-            </div>
-          </div>
-          <div class="review-col">
-            <h4>Hedef Uzman Ekip</h4>
-            <p style="font-weight:600;font-size:0.95rem">${esc(team.label)}</p>
-            <span class="field-hint">${esc(hierarchyPath(team.id))}</span>
-          </div>
-        </div>
-
-        <div class="review-card-actions">
-          <a href="#cases/${esc(c.id)}" class="btn btn-secondary btn-sm">Vaka Detayını İncele</a>
-          ${!isCompleted ? `
-            <div class="review-btn-group">
-              <button type="button" class="btn btn-secondary btn-sm" data-review-override="${esc(c.id)}">
-                Farklı Ekibe Yönlendir (Override)
-              </button>
-              <button type="button" class="btn btn-primary btn-sm" data-review-approve="${esc(c.id)}">
-                ${team.id === "expert_desk" ? "Uzman Kararı Ver" : "Yönlendirmeyi Onayla"}
-              </button>
-            </div>
-          ` : `
-            <div class="review-btn-group">
-              <button type="button" class="btn btn-subtle btn-xs" data-review-override="${esc(c.id)}">Kararı Değiştir</button>
-            </div>
-          `}
+        <div class="review-card-top"><div class="detail-title-group">
+          <span class="mono">${esc(c.id)}</span><strong>${esc(c.vehicle.family)}</strong>
+          ${priorityBadgeHtml(c)}<span class="badge ${stCls}">${esc(stLbl)}</span>
+        </div></div>
+        <p class="review-summary">${esc(c.technician_note)}</p>
+        <p class="review-reason">${esc(reasonText)}</p>
+        <div class="review-card-actions"><span class="text-secondary">${esc(team.label)} · ${c.evidence?.length || 0} ek kanıt</span>
+          <a href="#cases/${esc(c.id)}" class="btn ${isCompleted ? "btn-secondary" : "btn-primary"} btn-sm">${isCompleted ? "Kararı incele" : "İncele ve karar ver"}</a>
         </div>
       </article>
     `;
@@ -2410,7 +2009,7 @@ function renderExpertReview() {
     <div class="section-header">
       <div>
         <h2>Onay Bekleyen Vakalar (${pendingReviewCases.length})</h2>
-        <p class="section-subtitle">Güvenlik kapısı, kritik risk veya yönlendirme teyidi bekleyen vaka kayıtları</p>
+
       </div>
     </div>
     ${pendingReviewCases.length
@@ -2421,15 +2020,8 @@ function renderExpertReview() {
         </div>`
     }
 
-    ${reviewedCases.length ? `
-      <div class="section-header" style="margin-top:28px">
-        <div>
-          <h2>Tamamlanmış Uzman ve Yönlendirme Kararları (${reviewedCases.length})</h2>
-          <p class="section-subtitle">Uzman onayı veya yönlendirme değişikliği tamamlanmış vakalar</p>
-        </div>
-      </div>
-      <div class="review-queue-list">${reviewedCases.map((c) => renderReviewCard(c, true)).join("")}</div>
-    ` : ""}
+    ${reviewedCases.length ? `<details class="case-disclosure completed-reviews"><summary>Tamamlanan kararlar <span>${reviewedCases.length} vaka</span></summary>
+      <div class="disclosure-body review-queue-list">${reviewedCases.map((c) => renderReviewCard(c, true)).join("")}</div></details>` : ""}
   `;
 
   // 2. Specialist Team Queues
@@ -2664,9 +2256,9 @@ function openOverrideModal(caseId, mode = "override") {
     label: `${S.catalog.leaves.includes(id) ? "" : "[Üst Uzmanlık] "}${nodeLabel(id)}`,
   }));
 
-  const initialTarget = (team.id && team.id !== "expert_desk") ? team.id : S.catalog.leaves[0];
+  const initialTarget = (team.id && team.id !== "expert_desk") ? team.id : "";
 
-  select.innerHTML = options.map((o) => `
+  select.innerHTML = `<option value="">Uzman ekibi seçin</option>` + options.map((o) => `
     <option value="${esc(o.id)}" ${o.id === initialTarget ? "selected" : ""}>${esc(o.label)}</option>
   `).join("");
 
@@ -2676,7 +2268,9 @@ function openOverrideModal(caseId, mode = "override") {
   $("#ov-modal-desc").textContent = isApprove
     ? `${c.id} (${c.vehicle.family}) vakası için hedef uzman ekibi teyit edin ve kararı kaydedin.`
     : `${c.id} (${c.vehicle.family}) vakası için hedef ekibi seçin ve değişiklik gerekçesini belirtin.`;
-  $("#ov-reason-req").textContent = isApprove ? "İsteğe bağlı" : "Zorunlu (en az 3 karakter)";
+  const reasonRequired = !isApprove || isCriticalCase(c);
+  $("#ov-reason-req").textContent = reasonRequired ? "Zorunlu (en az 3 karakter)" : "İsteğe bağlı";
+  modal.dataset.reasonRequired = String(reasonRequired);
   $("#ov-modal-reason").value = "";
   $("#ov-modal-error").textContent = "";
 
@@ -2733,6 +2327,7 @@ function routeView() {
   if (view === "detail") renderCaseDetail();
   if (view === "new") loadDraftIfPresent();
   if (view === "review") renderExpertReview();
+  window.scrollTo(0, 0);
 }
 
 function renderAll() {
@@ -2743,6 +2338,10 @@ function renderAll() {
 // ---------- Event Listeners & Focus Management ----------
 function bindEvents() {
   window.addEventListener("hashchange", routeView);
+  $(".skip-link")?.addEventListener("click", (e) => {
+    e.preventDefault();
+    $("#main").focus();
+  });
 
   // Mobile sidebar drawer & accessibility
   const sidebar = $("#sidebar");
@@ -2907,6 +2506,22 @@ function bindEvents() {
       return;
     }
 
+    const startDemo = e.target.closest("[data-start-demo]");
+    if (startDemo) {
+      const sc = S.scenarios.find((x) => x.id === startDemo.dataset.startDemo);
+      if (!sc) return;
+      await busy(startDemo, "Vaka açılıyor…", async () => {
+        const created = await api("/cases", { method: "POST", body: {
+          vehicle: { ...sc.vehicle, location: "Demo servis" },
+          technician_note: sc.technician_note, dtc_codes: sc.dtc_codes || [],
+          recent_repairs: sc.recent_repairs || "", scenario_id: sc.id,
+        } });
+        upsertCase(created);
+        location.hash = `#cases/${created.id}`;
+      });
+      return;
+    }
+
     const fillSc = e.target.closest("[data-fill-scenario]");
     if (fillSc) {
       const sc = S.scenarios.find((x) => x.id === fillSc.dataset.fillScenario);
@@ -2971,29 +2586,6 @@ function bindEvents() {
     const ovBtn = e.target.closest("[data-open-override]");
     if (ovBtn) {
       openOverrideModal(S.selected, ovBtn.dataset.openOverride);
-      return;
-    }
-
-    const revOv = e.target.closest("[data-review-override]");
-    if (revOv) {
-      openOverrideModal(revOv.dataset.reviewOverride, "override");
-      return;
-    }
-
-    const revApp = e.target.closest("[data-review-approve]");
-    if (revApp) {
-      const cid = revApp.dataset.reviewApprove;
-      const c = S.cases.find((x) => x.id === cid);
-      const team = c ? suggestedTeamInfo(c) : null;
-      if (team?.id === "expert_desk") {
-        openOverrideModal(cid, "approve");
-      } else {
-        await busy(revApp, "Onaylanıyor…", async () => {
-          const updated = await api(`/cases/${cid}/review`, { method: "POST", body: { action: "approve" } });
-          upsertCase(updated);
-          toast(`${cid} yönlendirmesi onaylandı.`);
-        });
-      }
       return;
     }
 
@@ -3186,8 +2778,13 @@ function bindEvents() {
     const target = $("#ov-modal-target").value;
     const reason = $("#ov-modal-reason").value.trim();
 
-    if (mode === "override" && reason.length < 3) {
-      $("#ov-modal-error").textContent = "Yönlendirme değişikliği için en az 3 karakterlik gerekçe zorunludur.";
+    if (!target) {
+      $("#ov-modal-error").textContent = "Hedef uzman ekibi seçin.";
+      $("#ov-modal-target").focus();
+      return;
+    }
+    if (modal.dataset.reasonRequired === "true" && reason.length < 3) {
+      $("#ov-modal-error").textContent = "Bu karar için en az 3 karakterlik gerekçe zorunludur.";
       $("#ov-modal-reason").focus();
       return;
     }
