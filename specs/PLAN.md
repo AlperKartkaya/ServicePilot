@@ -73,4 +73,4 @@ Durum: `[ ]` yapılacak · `[x]` bitti. Her görev gereksinim ID'si taşır.
 ## M9 — Canlı Jev Worker [FR-22]
 - [x] Secret, kimlik, origin, sabit soru ve limit kontrollü sensör
 - [x] Pages bağlantısı, kaynak/gecikme ve hata bütünlüğü
-- [ ] Mock regresyonları, gerçek Worker/Jev ve Pages doğrulaması
+- [x] Mock regresyonları, gerçek Worker/Jev ve Pages doğrulaması
