@@ -68,3 +68,8 @@ Supersedes the opt-in/auth parts of the preceding release: the user explicitly w
 - 23 Python / 19 Node tests pass. Public-host browser fixture proves automatic live mode in a clean context, no code/header, evidence 429 retention/retry, 503 escalation without local fallback, history/recompute, safety bypass and reload at 390/768/1440 px. It serves checkout assets and intercepts sensor calls, not a live-provider claim. Static loopback smoke also passes.
 - Operator instructions now use Cloudflare's `servicepilot-jev → Settings → Variables and Secrets → TYPESAFE_API_KEY (Secret) → Deploy`; no visitor input. Live anonymous Pages verification follows the release.
 - Public endpoint intentionally has no authentication. CORS is not access control, the approximate limit is not a spending ceiling, and public use consumes the owner's Jev quota.
+
+### Anonymous public release verified
+- [Successful Pages run](https://github.com/AlperKartkaya/ServicePilot/actions/runs/41059410504), commit `01b6a9d`. Public HTML/JS/CSS hash-match source. No access-code modal/password field; a new context starts with empty sessionStorage and already shows live mode.
+- Real public Chromium issued evidence and new-case requests without Authorization, received HTTP 200 / `signal_source:jev`, confirmed the actual RAEP route, reloaded successfully and preserved history. Evidence-call sample 145 ms is one observation, not a performance claim. Recompute and fire safety made no provider call. No uncaught JS errors/overflow at 390/768/1440 px.
+- Screenshots inspected: `/tmp/servicepilot-public-live-desktop.png`, `/tmp/servicepilot-public-live-mobile.png`. No real customer/shared-server data touched. Existing TypeSafe secret value was not changed.

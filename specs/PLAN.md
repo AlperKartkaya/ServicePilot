@@ -78,5 +78,5 @@ Durum: `[ ]` yapılacak · `[x]` bitti. Her görev gereksinim ID'si taşır.
 
 ## M10 — Herkes için kodsuz canlı yayın [FR-22, ADR-12]
 - [x] Erişim kodu, token saklama, modal ve `/auth` kaldırılması; anonim regresyonlar
-- [ ] Worker secret korunarak public sensör ve otomatik canlı Pages yayını
-- [ ] Yeni anonim tarayıcı oturumunda gerçek Jev doğrulaması
+- [x] Worker secret korunarak public sensör ve otomatik canlı Pages yayını
+- [x] Yeni anonim tarayıcı oturumunda gerçek Jev doğrulaması
