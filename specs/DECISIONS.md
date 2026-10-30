@@ -51,3 +51,9 @@
 ## ADR-11 — Kimlik kontrollü, stateless Jev Worker [FR-22, NFR-2/8/9]
 - **Karar:** Pages'in mevcut yerel RAEP motoru ve tarayıcı kayıtları korunur; Worker yalnız anlamsal sensördür. Sabit soru/katalog/güvenlik kuralları Python kaynağından üretilir, serbest proxy değildir. Sunucu anahtarı Worker secret; ayrı rastgele demo kodu yalnız yetkili kullanıcının sekme oturumunda tutulur. Origin kontrolü ek katmandır, kimlik doğrulama yerine geçmez.
 - **Sınırlar:** Dakikalık yerel yaklaşık oran sınırı harcama tavanı değildir. Cloudflare ücretsiz limitleri Jev fiyatlandırmasından bağımsızdır. Worker vaka veya görsel saklamaz; senkronize ekip backend'i değildir. Canlı metin TypeSafe'e gider; gerçek müşteri verisi bu demoya girilmez.
+
+
+## ADR-12 — Kod istemeyen, herkese açık canlı sensör [FR-22]
+- **Bağlam:** Kullanıcı, ziyaretçiden demo kodu istemeyi açıkça reddetti; kendi sunucu anahtarıyla herkesin canlı kullanmasını istedi.
+- **Karar:** ADR-11'in erişim kodu ve opt-in bölümleri kaldırılır. Public Pages otomatik canlıdır; localhost statik fixture testleri yerel kalır. `/auth`, kod modalı, token saklama ve `DEMO_ACCESS_TOKEN` kaldırılır; `TYPESAFE_API_KEY` Worker secret olarak kalır.
+- **Sonuç:** Origin kontrolü kimlik değildir; endpoint bilerek anonim kullanıma açıktır. Sabit sorular, boyut/şema doğrulaması, safety gate ve 5/dakika/Cloudflare-konumu yaklaşık ortak limit korunur. Bu limit katı küresel harcama tavanı değildir; sağlayıcı kredisi herkese açık kullanımla tüketilebilir.

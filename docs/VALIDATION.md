@@ -58,3 +58,13 @@ The behavior-lock/writer plan in REFACTOR_PLAN.md preceded edits; a separate fin
 - Fresh isolated FastAPI browser smoke passed at all three widths; helper shut down its disposable server. No regression to API mode, and no real provider call in that fixture run.
 - XERJ generation 4: 37 indexed files / 398 records, all 18 code files indexed. Only empty `app/__init__.py` is junk (exit 3, `ok=true`). No secrets/case database indexed.
 - Operator code exists outside the repository with mode 600; staged actual-secret-value scan passed. Pre-existing `.gitignore` modification remains unstaged/unchanged. No production/shared storage, real customer dataset, Safari/device, rate-limit accuracy or billing invoice validation claimed.
+
+
+## Public no-code correction — 2026-10-30 [FR-22, ADR-12]
+Supersedes the opt-in/auth parts of the preceding release: the user explicitly wants every site visitor to use live Jev without a code.
+- Removed access modal/button, token/session storage, browser Authorization header and `/auth`. Public Pages automatically enables the sensor; loopback development remains static. No new dependency, policy math or persistence added.
+- Worker gate removed; `DEMO_ACCESS_TOKEN` secret deleted, existing `TYPESAFE_API_KEY` secret preserved. Secret-name listing confirms only `TYPESAFE_API_KEY` remains. API key values were not retrieved or changed.
+- Real anonymous HTTP call (no Authorization header) returned HTTP 200 with `signal_source:jev` (single sample 134 ms, not a benchmark). `/auth` returns 404. Fixed questions, size/schema validation, deterministic safety and approximate per-location shared limit retained.
+- 23 Python / 19 Node tests pass. Public-host browser fixture proves automatic live mode in a clean context, no code/header, evidence 429 retention/retry, 503 escalation without local fallback, history/recompute, safety bypass and reload at 390/768/1440 px. It serves checkout assets and intercepts sensor calls, not a live-provider claim. Static loopback smoke also passes.
+- Operator instructions now use Cloudflare's `servicepilot-jev → Settings → Variables and Secrets → TYPESAFE_API_KEY (Secret) → Deploy`; no visitor input. Live anonymous Pages verification follows the release.
+- Public endpoint intentionally has no authentication. CORS is not access control, the approximate limit is not a spending ceiling, and public use consumes the owner's Jev quota.

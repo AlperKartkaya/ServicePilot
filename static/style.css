@@ -1504,7 +1504,6 @@ code, pre, .mono {
 }
 
 input[type="text"],
-input[type="password"],
 input[type="number"],
 input[type="search"],
 input:not([type]),

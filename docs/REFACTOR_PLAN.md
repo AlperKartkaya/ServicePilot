@@ -24,3 +24,7 @@
 
 ## Live Jev extension — 2026-10-30 [FR-22]
 Scope: stateless Worker, exported Python questions, localApi creation/evidence/recompute provenance, connection dialog, deployment config/docs and tests. No persistence migration or FastAPI behavior change. Lock security boundaries with Worker tests and failed-write/history tests before integration. Then review secrets, payload minimization, safety bypass, no fake fixture fallback, rate-limit caveat and deployed asset parity separately.
+
+
+## Public sensor correction — 2026-10-30 [FR-22]
+Remove the rejected access-code layer, not the secret boundary: callers, Worker routing/CORS, browser bootstrap/header/modal, tests, specs and operator docs. First change anonymous-request regressions, then delete the gate. Review anonymous live behavior, no Authorization/token in browser, existing failure/safety/history tests and production source parity. No new dependencies, storage or policy math.

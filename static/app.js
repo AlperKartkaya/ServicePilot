@@ -12,8 +12,7 @@ const LOCAL_CASES_KEY = "servicepilot_local_cases_v2";
 const LOCAL_SETTINGS_KEY = "servicepilot_local_settings_v2";
 // Public endpoint only; TypeSafe key is a Worker secret, never shipped here.
 const JEV_WORKER_URL = "https://servicepilot-jev.alperkartkaya.workers.dev";
-const JEV_TOKEN_KEY = "servicepilot_jev_access";
-let liveJevToken = "";
+let liveJevEnabled = false;
 
 const MAX_ATT_COUNT = 4;
 const MAX_ATT_BYTES = 750000; // ~500 KB base64
@@ -859,10 +858,10 @@ async function localSignals(c, fixture, demoMs) {
   if (jsDecide(c, null, S.settings).safety_hits.length || isCriticalCase(c, S.settings)) {
     return { signals: null, latency_ms: 0, signal_source: "safety" };
   }
-  if (!liveJevToken) return { signals: fixture || inferLocalSignals(c), latency_ms: demoMs, signal_source: "local" };
+  if (!liveJevEnabled) return { signals: fixture || inferLocalSignals(c), latency_ms: demoMs, signal_source: "local" };
   const res = await fetch(`${JEV_WORKER_URL}/infer`, {
     method: "POST", signal: AbortSignal.timeout(20000),
-    headers: { "Content-Type": "application/json", Authorization: `Bearer ${liveJevToken}` },
+    headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
       vehicle: { family: c.vehicle.family, fuel: c.vehicle.fuel, km: c.vehicle.km },
       technician_note: c.technician_note, initial_measurements: c.initial_measurements,
@@ -1178,7 +1177,7 @@ function updateNavCounts() {
     if (S.mode === "api") {
       envLabel.textContent = "Canlı API";
       envDot.style.background = "var(--accent)";
-    } else if (liveJevToken) {
+    } else if (liveJevEnabled) {
       envLabel.textContent = "Canlı Jev · yerel kayıt";
       envDot.style.background = "var(--accent)";
     } else {
@@ -1186,11 +1185,7 @@ function updateNavCounts() {
       envDot.style.background = "var(--warning)";
     }
   }
-  const connect = $("#jev-connect");
-  if (connect) {
-    connect.hidden = S.mode === "api";
-    connect.textContent = liveJevToken ? "Jev bağlantısı" : "Canlı Jev'i aç";
-  }
+
 }
 
 // ---------- SCREEN A: Genel Bakış (Overview) ----------
@@ -1317,7 +1312,7 @@ function renderOverview() {
   if (postureEl) {
     postureEl.innerHTML = `
       <div class="section-header"><h3>Çalışma ortamı</h3><a href="#policy" class="inline-link">RAEP ayarları</a></div>
-      <p>${S.mode === "api" ? "FastAPI bağlı. Yeni vakalar Jev ile değerlendirilir; temsili kayıtlar ayrıca etiketlenir." : liveJevToken ? "Canlı Jev sensörü bağlı. RAEP tarayıcıda çalışır; kayıtlar yalnız bu cihazda saklanır. İlk kayıtlar ve replay temsili kalır." : "Yerel demo. Sinyaller temsili veya yerel kurallarla üretilir; canlı Jev çağrılmaz."}</p>
+      <p>${S.mode === "api" ? "FastAPI bağlı. Yeni vakalar Jev ile değerlendirilir; temsili kayıtlar ayrıca etiketlenir." : liveJevEnabled ? "Canlı Jev sensörü bağlı. RAEP tarayıcıda çalışır; kayıtlar yalnız bu cihazda saklanır. İlk kayıtlar ve replay temsili kalır." : "Yerel demo. Sinyaller temsili veya yerel kurallarla üretilir; canlı Jev çağrılmaz."}</p>
       <p class="field-hint">Senaryolar sentetik; maliyetler uzman varsayımıdır. Saha doğruluğu veya tasarruf iddiası değildir.</p>
     `;
   }
@@ -2878,37 +2873,8 @@ function bindEvents() {
 (async function init() {
   bindEvents();
   renderFormDtcChips();
-  try { liveJevToken = sessionStorage.getItem(JEV_TOKEN_KEY) || ""; } catch {}
-  $("#jev-connect").addEventListener("click", () => {
-    $("#jev-access-error").textContent = "";
-    $("#jev-access-code").value = "";
-    $("#jev-access-modal").showModal();
-    $("#jev-access-code").focus();
-  });
-  $("#jev-disconnect").addEventListener("click", () => {
-    liveJevToken = "";
-    try { sessionStorage.removeItem(JEV_TOKEN_KEY); } catch {}
-    $("#jev-access-modal").close();
-    renderAll();
-  });
-  $("#jev-access-form").addEventListener("submit", async (event) => {
-    event.preventDefault();
-    const button = $("#jev-access-submit");
-    button.disabled = true;
-    try {
-      const code = $("#jev-access-code").value.trim();
-      if (!code) throw new Error("Demo erişim kodunu girin.");
-      const res = await fetch(`${JEV_WORKER_URL}/auth`, { method: "POST", signal: AbortSignal.timeout(10000),
-        headers: { Authorization: `Bearer ${code}` } });
-      if (!res.ok) throw new Error("Erişim kodu doğrulanamadı.");
-      liveJevToken = code;
-      try { sessionStorage.setItem(JEV_TOKEN_KEY, code); } catch {}
-      $("#jev-access-code").value = "";
-      $("#jev-access-modal").close();
-      renderAll();
-    } catch (error) { $("#jev-access-error").textContent = error.message; }
-    finally { button.disabled = false; }
-  });
+  // Public Pages is live by default; loopback/static development never spends provider credits.
+  liveJevEnabled = location.hostname === "alperkartkaya.github.io";
 
   // Mode probe: check if backend API is reachable
   const isStaticHost = location.hostname.endsWith("github.io") || location.protocol === "file:";

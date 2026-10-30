@@ -4,11 +4,11 @@ import { handle } from '../worker/index.mjs';
 import { readFileSync } from 'node:fs';
 const contract = JSON.parse(readFileSync(new URL('../worker/contract.json', import.meta.url)));
 const origin = 'https://alperkartkaya.github.io';
-const env = {ALLOWED_ORIGIN: origin, DEMO_ACCESS_TOKEN:'test-access', TYPESAFE_API_KEY:'server-only',
+const env = {ALLOWED_ORIGIN: origin, TYPESAFE_API_KEY:'server-only',
   JEV_LIMIT:{limit: async () => ({success:true})}};
 const body = {vehicle:{family:'Isuzu NPR',fuel:'diesel',km:1000},technician_note:'Marş motoru dönmüyor.',evidence:[]};
 const request = (path='/infer', data=body, headers={}) => new Request('https://worker.test'+path, {
-  method:'POST', headers:{Origin:origin,Authorization:'Bearer test-access','Content-Type':'application/json',...headers},body:JSON.stringify(data)});
+  method:'POST', headers:{Origin:origin,'Content-Type':'application/json',...headers},body:JSON.stringify(data)});
 let calls=0;
 const answers = {route:{probabilities:Object.fromEntries(contract.leaves.map(l=>[l,1/9]))},
   sufficient:{noul:0.3},critical:{noul:0.1},priority:{score:2,probabilities:{}}};
@@ -25,12 +25,12 @@ const upstream = async (url, options) => {
   assert.equal(sent.state.attachments,undefined);
   return Response.json({answers});
 };
-test('auth and origin reject before any paid inference', async()=>{
+test('public inference needs no access code; wrong origin rejects before inference', async()=>{
   calls=0;
-  assert.equal((await handle(request('/infer',body,{Authorization:''}),env,upstream)).status,401);
+  assert.equal((await handle(request(),env,upstream)).status,200);
   assert.equal((await handle(request('/infer',body,{Origin:'https://evil.test'}),env,upstream)).status,403);
-  assert.equal((await handle(request('/auth',{}),env,upstream)).status,200);
-  assert.equal(calls,0);
+  assert.equal((await handle(request('/auth',{}),env,upstream)).status,404);
+  assert.equal(calls,1);
 });
 test('rejects oversized/invalid/custom evidence before inference',async()=>{
   calls=0;

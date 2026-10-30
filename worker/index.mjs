@@ -63,16 +63,14 @@ export async function handle(request, env, send) {
   const reply = (body, status = 200) => Response.json(body, {status, headers: {
     'Access-Control-Allow-Origin': origin === env.ALLOWED_ORIGIN ? origin : 'null',
     'Access-Control-Allow-Methods': 'POST, GET, OPTIONS',
-    'Access-Control-Allow-Headers': 'Authorization, Content-Type',
+    'Access-Control-Allow-Headers': 'Content-Type',
     'Cache-Control': 'no-store', 'Vary': 'Origin', 'X-Content-Type-Options': 'nosniff',
   }});
   if (path === '/health' && request.method === 'GET') return reply({ok:true});
   if (origin !== env.ALLOWED_ORIGIN) return reply({detail:'Origin izinli değil.'},403);
   if (request.method === 'OPTIONS') return reply({ok:true});
-  if (!['/auth','/infer'].includes(path)) return reply({detail:'Bulunamadı.'},404);
+  if (path !== '/infer') return reply({detail:'Bulunamadı.'},404);
   if (request.method !== 'POST') return reply({detail:'POST gerekli.'},405);
-  if (!env.DEMO_ACCESS_TOKEN || request.headers.get('Authorization') !== `Bearer ${env.DEMO_ACCESS_TOKEN}`) return reply({detail:'Demo erişim kodu geçersiz.'},401);
-  if (path === '/auth') return reply({ok:true});
   if (!request.headers.get('Content-Type')?.startsWith('application/json')) return reply({detail:'JSON gerekli.'},415);
   let state;
   try { state = stateFrom(await readJson(request, 32768)); }

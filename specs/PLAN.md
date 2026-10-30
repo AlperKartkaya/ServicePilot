@@ -74,3 +74,9 @@ Durum: `[ ]` yapılacak · `[x]` bitti. Her görev gereksinim ID'si taşır.
 - [x] Secret, kimlik, origin, sabit soru ve limit kontrollü sensör
 - [x] Pages bağlantısı, kaynak/gecikme ve hata bütünlüğü
 - [x] Mock regresyonları, gerçek Worker/Jev ve Pages doğrulaması
+
+
+## M10 — Herkes için kodsuz canlı yayın [FR-22, ADR-12]
+- [x] Erişim kodu, token saklama, modal ve `/auth` kaldırılması; anonim regresyonlar
+- [ ] Worker secret korunarak public sensör ve otomatik canlı Pages yayını
+- [ ] Yeni anonim tarayıcı oturumunda gerçek Jev doğrulaması

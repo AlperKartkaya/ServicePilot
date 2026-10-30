@@ -8,7 +8,7 @@ from playwright.sync_api import sync_playwright, expect
 from app.scenarios import SCENARIOS
 
 can = next(s for s in SCENARIOS if s['id'] == 'can_comm')['fixture_signals']
-url = 'http://127.0.0.1:5187'
+url = 'https://alperkartkaya.github.io/ServicePilot'
 with sync_playwright() as p:
     browser = p.chromium.launch()
     context = browser.new_context(viewport={'width': 1440, 'height': 1000}, reduced_motion='reduce')
@@ -20,10 +20,11 @@ with sync_playwright() as p:
 
     def sensor(route):
         request = route.request
-        headers = {'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Headers': 'authorization, content-type'}
-        if request.method == 'OPTIONS' or request.url.endswith('/auth'):
+        headers = {'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Headers': 'content-type'}
+        if request.method == 'OPTIONS':
             route.fulfill(json={'ok': True}, headers=headers)
             return
+        assert 'authorization' not in request.headers
         body = request.post_data_json
         assert set(body['vehicle']) == {'family', 'fuel', 'km'}
         assert 'attachments' not in body
@@ -38,11 +39,16 @@ with sync_playwright() as p:
         route.fulfill(status=status, json=data, headers=headers)
 
     page.route('https://servicepilot-jev.alperkartkaya.workers.dev/**', sensor)
-    page.goto(url, wait_until='networkidle')
-    page.locator('#jev-connect').click()
-    assert page.locator('#jev-access-code').bounding_box()['height'] >= 40
-    page.locator('#jev-access-code').fill('fixture-code-not-a-secret')
-    page.locator('#jev-access-submit').click()
+    # Serve this checkout at the production hostname; no live Pages or Jev requests.
+    def public_asset(route):
+        from urllib.parse import urlparse
+        name = urlparse(route.request.url).path.removeprefix('/ServicePilot/').strip('/') or 'index.html'
+        assert name in {'index.html', 'app.js', 'style.css'}
+        route.fulfill(path=str(Path(__file__).resolve().parents[1] / 'static' / name))
+
+    page.route(url + '/**', public_asset)
+    page.goto(url + '/', wait_until='networkidle')
+    assert page.locator('#jev-access-modal').count() == 0
     expect(page.locator('#env-label')).to_contain_text('Canlı Jev')
     page.locator('[data-start-demo="can_comm"]').click()
     expect(page.locator('#next-evidence-form')).to_be_visible()
@@ -73,16 +79,12 @@ with sync_playwright() as p:
     page.locator('[data-start-demo="critical_fire"]').click()
     expect(page.locator('.sensor-stage')).to_contain_text('Jev çağrılmadı')
     assert len(requests) == before
-    page.locator('#jev-connect').click()
     for width in [390, 768, 1440]:
         page.set_viewport_size({'width': width, 'height': 900})
         assert page.evaluate('document.documentElement.scrollWidth <= innerWidth'), width
     page.set_viewport_size({'width': 390, 'height': 844})
-    page.screenshot(path='/tmp/servicepilot-jev-dialog-mobile.png', full_page=True)
-    page.locator('#jev-disconnect').click()
-    expect(page.locator('#env-label')).to_contain_text('Statik')
-    assert not page.evaluate('sessionStorage.getItem("servicepilot_jev_access")')
-    assert 'fixture-code' not in page.evaluate('JSON.stringify(localStorage)')
+    page.screenshot(path='/tmp/servicepilot-public-jev-mobile.png', full_page=True)
+    assert not page.evaluate('sessionStorage.length')
     assert not errors, errors
     browser.close()
-print('PASS: fixture-only live UI, source/latency, quota retry, provider failure, safety, reload, disconnect, responsive dialog')
+print('PASS: automatic anonymous live UI; no code/header; quota retry, provider failure, safety, reload, three widths')

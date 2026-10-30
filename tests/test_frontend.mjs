@@ -81,12 +81,12 @@ test('legacy demo flag cannot mislabel an old API step as a fixture', () => {
 
 test('live evidence rate-limit failure preserves case and history', async () => {
   reset();
-  run('liveJevToken = "test-access"');
+  run('liveJevEnabled = true');
   context.fetch = async () => ({ok:false,status:429,json:async()=>({detail:'Limit doldu'})});
   const before = run('JSON.stringify(S.cases[0])');
   await assert.rejects(run('localApi("/cases/SP-0001/evidence", {method:"POST",body:{evidence_id:S.cases[0].pending_evidence,result:"120 ohm"}})'), /Limit doldu/);
   assert.equal(run('JSON.stringify(S.cases[0])'), before);
-  run('liveJevToken = ""');
+  run('liveJevEnabled = false');
 });
 
 test('live sensor source and latency survive recompute without another request', async () => {
@@ -95,34 +95,42 @@ test('live sensor source and latency survive recompute without another request',
   context.fetch = async () => { calls++; return {ok:true,status:200,json:async()=>({
     signals:JSON.parse(run('JSON.stringify(FALLBACK_SCENARIOS.find(s=>s.id==="can_comm").fixture_signals.after.can_resistance)')),
     signal_source:'jev',latency_ms:123})}; };
-  run('liveJevToken = "test-access"');
+  run('liveJevEnabled = true');
   await run('localApi("/cases/SP-0001/evidence", {method:"POST",body:{evidence_id:S.cases[0].pending_evidence,result:"120 ohm"}})');
   assert.equal(run('S.cases[0].steps.at(-1).signal_source'), 'jev');
   await run('localApi("/cases/SP-0001/recompute", {method:"POST"})');
   assert.equal(run('S.cases[0].steps.at(-1).signal_source'), 'jev');
   assert.equal(calls, 1);
-  run('liveJevToken = ""');
+  run('liveJevEnabled = false');
 });
 
 test('critical documentation never calls Jev or appends a misleading unavailable step', async () => {
   reset();
-  run('liveJevToken = "test-access"');
+  run('liveJevEnabled = true');
   context.fetch = async () => { throw new Error('Must not call provider'); };
   const count = run('S.cases[2].steps.length');
   await run('localApi("/cases/SP-0003/evidence", {method:"POST",body:{evidence_id:"service_history",result:"Son bakım kaydı eklendi."}})');
   assert.equal(run('S.cases[2].status'),'escalated');
   assert.equal(run('S.cases[2].steps.length'),count);
   assert.equal(run('S.cases[2].evidence.length'),1);
-  run('liveJevToken = ""');
+  run('liveJevEnabled = false');
 });
 
 test('provider unavailable records honest escalation; no fixture fallback', async () => {
   reset();
-  run('liveJevToken = "test-access"');
+  run('liveJevEnabled = true');
   context.fetch = async () => ({ok:false,status:503,json:async()=>({signals:null,latency_ms:20,signal_source:'unavailable'})});
   await run('localApi("/cases/SP-0001/evidence", {method:"POST",body:{evidence_id:S.cases[0].pending_evidence,result:"120 ohm"}})');
   assert.equal(run('S.cases[0].steps.at(-1).signal_source'),'unavailable');
   assert.equal(run('S.cases[0].steps.at(-1).signals'),null);
   assert.equal(run('S.cases[0].status'),'escalated');
-  run('liveJevToken = ""');
+  run('liveJevEnabled = false');
+});
+
+
+test('public browser ships no access-code layer or provider credential', () => {
+  const js = readFileSync(new URL('../static/app.js', import.meta.url), 'utf8');
+  const html = readFileSync(new URL('../static/index.html', import.meta.url), 'utf8');
+  assert.doesNotMatch(js, /JEV_TOKEN_KEY|liveJevToken|Authorization:|sessionStorage/);
+  assert.doesNotMatch(html, /jev-access|jev-connect|jev-disconnect/);
 });

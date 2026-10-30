@@ -97,10 +97,9 @@ Base: `http://localhost:8000`. JSON in/out. Otomatik OpenAPI: `/docs`.
 `Step.signal_source`: `jev` (canlı API), `fixture` (hazır sentetik kayıt), `local` (statik demo), `safety` (Jev çağrılmadan güvenlik kuralı), `unavailable` (Jev hatası) veya `unknown` (kaynağı kaydedilmemiş eski adım). Yeniden hesaplama kaynak bilgisini devralır; yeni Jev çağrısı yapmaz. Bu alan eklemelidir; eski kayıtlara migration uygulanmaz. Temsili gecikmeler UI’da performans ölçümü olarak kullanılmaz.
 
 
-## GitHub Pages Jev sensörü [FR-22]
-Ayrı Cloudflare Worker; FastAPI uçlarını değiştirmez. İzinli origin `https://alperkartkaya.github.io`. `Authorization: Bearer <DEMO_ACCESS_TOKEN>` canlı uçlarda zorunludur; TypeSafe anahtarı istemciye dönmez.
+## GitHub Pages Jev sensörü [FR-22, ADR-12]
+Ayrı Cloudflare Worker; FastAPI uçlarını değiştirmez. Endpoint bilerek anonim kullanıma açıktır; ziyaretçi anahtarı, giriş veya erişim kodu yoktur. İzinli browser origin `https://alperkartkaya.github.io`; origin kontrolü kimlik doğrulama değildir. `TYPESAFE_API_KEY` yalnız Worker secret'tır.
 - `GET /health`: `{ok:true}`; model çağrılmaz.
-- `POST /auth`: kod doğrulama, `{ok:true}`; model çağrılmaz.
 - `POST /infer`: `{vehicle:{family,fuel,km}, technician_note, initial_measurements?, dtc_codes?, recent_repairs?, evidence?:[{id,result}]}`. Katalog/soru/model istemciden alınmaz, VIN/konum/görseller gönderilmez. Gövde en fazla 32 KiB, alanlar mevcut vaka limitleriyle sınırlı.
 - Yanıt: `{signals, latency_ms, signal_source:"jev"|"safety"|"unavailable"}`. Sinyal şekli mevcut Step sözleşmesiyle aynıdır. Güvenlik kuralı `signals:null, latency_ms:0` döner.
-- `401` yetkisiz, `403` origin, `413` boyut, `422` şema, `429` yaklaşık dakikalık limit; istemci yazma yapmaz. `503` sağlayıcı/yanıt hatası: `signals:null, signal_source:"unavailable"`; RAEP insan eskalasyonunu kaydeder. Hata yanıtları sağlayıcı gövdesini/anahtarı içermez.
+- `403` origin, `413` boyut, `422` şema, `429` yaklaşık ortak 5/dakika/Cloudflare-konumu limiti; istemci yazma yapmaz. `503` sağlayıcı/yanıt/eksik sunucu anahtarı hatası: `signals:null, signal_source:"unavailable"`; RAEP insan eskalasyonunu kaydeder. Hata yanıtları sağlayıcı gövdesini/anahtarı içermez. `/auth` kaldırıldı (`404`).
