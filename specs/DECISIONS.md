@@ -46,3 +46,8 @@
 - **Bağlam:** MVP paylaşılabilir bir HTTPS adresinde çalışmalı; kişisel portföy değiştirilmemeli.
 - **Karar:** ServicePilot deposunda GitHub Actions ile yalnız `static/` artifact'ı yayımlanır. Python API ve anahtar GitHub Pages'e taşınmaz. Mevcut açıkça etiketli yerel demo korunur.
 - **Sonuç:** Derleme veya yeni uygulama bağımlılığı gerekmez. Canlı Jev bu yayının parçası değildir; ayrıca kimlik/kullanım sınırları ve kalıcı veri tasarımı olan backend gerektirir. Sadece CORS kontrolüne güvenen herkese açık bir Jev proxy'si kurulmaz.
+
+
+## ADR-11 — Kimlik kontrollü, stateless Jev Worker [FR-22, NFR-2/8/9]
+- **Karar:** Pages'in mevcut yerel RAEP motoru ve tarayıcı kayıtları korunur; Worker yalnız anlamsal sensördür. Sabit soru/katalog/güvenlik kuralları Python kaynağından üretilir, serbest proxy değildir. Sunucu anahtarı Worker secret; ayrı rastgele demo kodu yalnız yetkili kullanıcının sekme oturumunda tutulur. Origin kontrolü ek katmandır, kimlik doğrulama yerine geçmez.
+- **Sınırlar:** Dakikalık yerel yaklaşık oran sınırı harcama tavanı değildir. Cloudflare ücretsiz limitleri Jev fiyatlandırmasından bağımsızdır. Worker vaka veya görsel saklamaz; senkronize ekip backend'i değildir. Canlı metin TypeSafe'e gider; gerçek müşteri verisi bu demoya girilmez.

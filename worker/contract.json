@@ -1,0 +1,133 @@
+{
+  "url": "https://api.typesafe.ai/v1/systemone",
+  "model": "jev-latest",
+  "questions": {
+    "route": {
+      "type": "choice",
+      "instructions": "Which central technical support specialty is responsible for this commercial vehicle service case? Use `technician_note`, `dtc_codes`, `vehicle`, `recent_repairs` and `collected_evidence`.",
+      "criteria": {
+        "engine": "Diesel engine mechanical faults: overheating, oil/coolant loss, knocking, smoke from exhaust, power loss of mechanical origin, injection and turbo.",
+        "transmission": "Gearbox, clutch, driveline: slipping, hard or delayed shifting, gear noise, transmission warnings.",
+        "lv_electrical": "12/24V system: batteries, starter motor, alternator, fuses, wiring harness, lighting, no-crank or clicking at start.",
+        "ecu_comm": "Control units and CAN bus: U-codes, lost communication, multiple unrelated warnings, dashboard/cluster errors, software.",
+        "hv_battery": "Electric vehicle traction battery: state of charge drop, cell imbalance, battery temperature, isolation faults in the pack.",
+        "hv_charging": "Electric vehicle charging: charger connection, charge session aborts, onboard charger, charging socket.",
+        "hv_inverter": "Electric drive: inverter, traction e-motor, power electronics, loss of propulsion in an electric vehicle.",
+        "brakes": "Air brakes, ABS/EBS, brake pressure, compressor, brake noise or reduced braking.",
+        "steering_suspension": "Steering, power steering, suspension, air suspension, vibration and pulling."
+      }
+    },
+    "sufficient": {
+      "type": "noul",
+      "instructions": "Does the case already contain enough information to identify the responsible technical specialty without asking the technician for further measurements, photos or tests?"
+    },
+    "critical": {
+      "type": "noul",
+      "instructions": "Does this service case involve an immediate safety risk for people?",
+      "criteria": {
+        "true": "Fire, burning smell, loss of braking or steering, high-voltage exposure, or the vehicle must not be driven.",
+        "false": "No immediate danger to people; the fault affects availability, performance or comfort only."
+      }
+    },
+    "priority": {
+      "type": "score",
+      "instructions": "How urgent is this service case for the operator?",
+      "criteria": [
+        "Routine: can be handled at the next planned service",
+        "Vehicle works but with reduced performance or comfort",
+        "Vehicle partially unusable, trips at risk",
+        "Vehicle is stranded or there is a safety risk"
+      ]
+    },
+    "has_dtc_scan": {
+      "type": "noul",
+      "instructions": "Does the case already contain the actual result of this check: diagnostic trouble codes read with a scan tool, with freeze-frame data? Only a mention that it should be done does not count."
+    },
+    "has_battery_voltage": {
+      "type": "noul",
+      "instructions": "Does the case already contain the actual result of this check: 12/24V battery voltage measured at rest, with ignition on and while cranking? Only a mention that it should be done does not count."
+    },
+    "has_connector_photo": {
+      "type": "noul",
+      "instructions": "Does the case already contain the actual result of this check: close-up photo or visual inspection of the related connector and wiring harness? Only a mention that it should be done does not count."
+    },
+    "has_can_resistance": {
+      "type": "noul",
+      "instructions": "Does the case already contain the actual result of this check: CAN bus termination resistance measurement? Only a mention that it should be done does not count."
+    },
+    "has_hv_isolation": {
+      "type": "noul",
+      "instructions": "Does the case already contain the actual result of this check: high-voltage isolation resistance measurement by certified personnel? Only a mention that it should be done does not count."
+    },
+    "has_charging_log": {
+      "type": "noul",
+      "instructions": "Does the case already contain the actual result of this check: charging station or onboard charger session error log? Only a mention that it should be done does not count."
+    },
+    "has_fluid_check": {
+      "type": "noul",
+      "instructions": "Does the case already contain the actual result of this check: engine oil and coolant level and condition check? Only a mention that it should be done does not count."
+    },
+    "has_trans_log": {
+      "type": "noul",
+      "instructions": "Does the case already contain the actual result of this check: transmission oil temperature and gear shift log? Only a mention that it should be done does not count."
+    },
+    "has_brake_pressure": {
+      "type": "noul",
+      "instructions": "Does the case already contain the actual result of this check: air brake system pressure and leak test? Only a mention that it should be done does not count."
+    },
+    "has_sound_video": {
+      "type": "noul",
+      "instructions": "Does the case already contain the actual result of this check: sound or video recording of the symptom? Only a mention that it should be done does not count."
+    },
+    "has_road_test": {
+      "type": "noul",
+      "instructions": "Does the case already contain the actual result of this check: road test reproducing the fault? Only a mention that it should be done does not count."
+    },
+    "has_service_history": {
+      "type": "noul",
+      "instructions": "Does the case already contain the actual result of this check: recent maintenance and repair history of the vehicle? Only a mention that it should be done does not count."
+    }
+  },
+  "leaves": [
+    "engine",
+    "transmission",
+    "lv_electrical",
+    "ecu_comm",
+    "hv_battery",
+    "hv_charging",
+    "hv_inverter",
+    "brakes",
+    "steering_suspension"
+  ],
+  "evidence": {
+    "dtc_scan": "diagnostic trouble codes read with a scan tool, with freeze-frame data",
+    "battery_voltage": "12/24V battery voltage measured at rest, with ignition on and while cranking",
+    "connector_photo": "close-up photo or visual inspection of the related connector and wiring harness",
+    "can_resistance": "CAN bus termination resistance measurement",
+    "hv_isolation": "high-voltage isolation resistance measurement by certified personnel",
+    "charging_log": "charging station or onboard charger session error log",
+    "fluid_check": "engine oil and coolant level and condition check",
+    "trans_log": "transmission oil temperature and gear shift log",
+    "brake_pressure": "air brake system pressure and leak test",
+    "sound_video": "sound or video recording of the symptom",
+    "road_test": "road test reproducing the fault",
+    "service_history": "recent maintenance and repair history of the vehicle"
+  },
+  "safety_rules": [
+    "yangın",
+    "alev",
+    "yanık kokusu",
+    "fren tutmuyor",
+    "fren boşa",
+    "direksiyon kilit",
+    "izolasyon hatası",
+    "izolasyon arızası",
+    "elektrik çarp",
+    "batarya şişme",
+    "termal kaçak",
+    "fire",
+    "brake failure",
+    "isolation fault",
+    "thermal runaway"
+  ]
+}

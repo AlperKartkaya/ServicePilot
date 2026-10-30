@@ -1,0 +1,16 @@
+name = "servicepilot-jev"
+main = "index.mjs"
+compatibility_date = "2026-10-30"
+workers_dev = true
+preview_urls = false
+
+[vars]
+ALLOWED_ORIGIN = "https://alperkartkaya.github.io"
+
+[observability]
+enabled = false
+
+[[ratelimits]]
+name = "JEV_LIMIT"
+namespace_id = "3486170291"
+simple = { limit = 5, period = 60 }

@@ -10,9 +10,11 @@ ServicePilot, eksik bir servis vakasında **sıradaki en değerli kanıtı** se�
 
 [GitHub Pages — ServicePilot](https://alperkartkaya.github.io/ServicePilot/)
 
-Bu adres **statik yerel demo** kullanır; canlı Jev çağırmaz. Vakalar tarayıcıda saklanır, kullanıcılar arasında paylaşılmaz. Gerçek müşteri verisi girmeyin. `main` üzerinde statik dosyalar değişince `.github/workflows/pages.yml` yalnız `static/` dizinini yayımlar. Manuel yayın: `gh workflow run pages.yml`.
+Varsayılan mod statik yerel demodur. **Canlı Jev'i aç** ile demo erişim kodunu girin; ardından yeni vaka açın. Jev anahtarı Cloudflare Worker secret olarak kalır. Jev olasılık üretir; RAEP tarayıcıda karar verir. Kayıtlar cihazda saklanır, kullanıcılar arasında paylaşılmaz. İlk temsili kayıtlar ve replay canlı modele dönüşmez. Gerçek müşteri verisi girmeyin.
 
-Canlı Jev için aşağıdaki FastAPI sunucusu gerekir; `.env` hiçbir zaman Pages artifact'ına dahil edilmez. Cloudflare Worker bu adımda kurulmadı: anahtarı gizlemek tek başına yeterli değildir; canlı servis için kimlik/kullanım sınırı ve veri kalıcılığı da gerekir.
+Kod bu makinede `~/.config/servicepilot/demo-access-code` dosyasında (izin `600`); yayımlanan kaynakta yoktur. Kod yalnız sekme oturumunda saklanır. **Jev bağlantısı → Statik demoya dön** kodu oturumdan kaldırır. Worker erişim kodu TypeSafe anahtarı değildir.
+
+`main` güncellemelerinde `.github/workflows/pages.yml` yalnız `static/` yayımlar. Worker kurulumu, limitleri, güvenli secret yönetimi ve testler: [Worker rehberi](docs/WORKER.md). `.env` hiçbir zaman Pages artifact'ına girmez.
 
 ## Kurulum
 
@@ -33,7 +35,7 @@ uv run pytest -q             # RAEP birim testleri
 4. Vakada **Teknik karar izi**: tüm olasılıklar, ham sinyaller, aday kanıtların `U = L·Δerr − λ·C` hesabı ve adımın politika snapshot’ı. **RAEP ve replay** üzerinden ayarı değiştirip vakada yeniden hesaplayın. Yeni Jev çağrısı yapılmaz; geçmiş ve insan ataması korunur.
 5. **Uzman İncelemesi → Ekip kuyrukları** ile devri, **RAEP ve replay → Simülasyonu çalıştır** ile 13 sentetik senaryonun gerçek politika sonuçlarını görün.
 
-**Mod farkı:** FastAPI'de yeni vaka ve normal kanıt adımı canlı Jev kullanır; anahtar yoksa/hata olursa insan uzmana eskale edilir. İlk beş kayıt temsili sinyallerdir. Statik sunucu/GitHub Pages canlı Jev çağırmaz; tarayıcıdaki yerel demo motorunu kullanır. Kaynak her karar adımında etiketlidir. API yazma hatasında sessizce yerel moda geçilmez. Canlı model sonucu hazır senaryodan farklı olabilir; demo yanıtı yalnız seçilen kanıt için mevcutsa sunulur.
+**Mod farkı:** FastAPI'de yeni vaka ve normal kanıt adımı canlı Jev kullanır; anahtar yoksa/hata olursa insan uzmana eskale edilir. İlk beş kayıt temsili sinyallerdir. Statik mod canlı Jev çağırmaz. Pages üzerinde erişim koduyla açılan Worker bağlantısı yeni vaka ve kanıt için canlı sinyal kullanır; RAEP ve kayıtlar tarayıcıda kalır. Kaynak her karar adımında etiketlidir. API yazma hatasında sessizce yerel moda geçilmez. Canlı model sonucu hazır senaryodan farklı olabilir; demo yanıtı yalnız seçilen kanıt için mevcutsa sunulur.
 
 > Senaryolar sentetiktir; kanıt maliyetleri ve güvenilirlikleri uzman varsayımıdır. Anadolu Isuzu verisi, doğruluk veya saha tasarrufu iddiası değildir. ProEye bir devir hedefidir; canlı entegrasyon değildir.
 

@@ -10,6 +10,11 @@ const num = (x, d = 2) => (x == null ? "—" : Number(x).toFixed(d));
 const DRAFT_KEY = "servicepilot_case_draft_v2";
 const LOCAL_CASES_KEY = "servicepilot_local_cases_v2";
 const LOCAL_SETTINGS_KEY = "servicepilot_local_settings_v2";
+// Public endpoint only; TypeSafe key is a Worker secret, never shipped here.
+const JEV_WORKER_URL = "https://servicepilot-jev.alperkartkaya.workers.dev";
+const JEV_TOKEN_KEY = "servicepilot_jev_access";
+let liveJevToken = "";
+
 const MAX_ATT_COUNT = 4;
 const MAX_ATT_BYTES = 750000; // ~500 KB base64
 
@@ -545,13 +550,13 @@ function inferLocalSignals(caseObj) {
 }
 
 // Append-only decision state manager
-function applyLocalDecision(caseObj, d, sig, latencyMs, s, recomputed = false) {
+function applyLocalDecision(caseObj, d, sig, latencyMs, s, recomputed = false, source = "local") {
   const ts = new Date().toISOString();
   caseObj.steps = caseObj.steps || [];
   caseObj.steps.push({
     at: ts,
     latency_ms: latencyMs,
-    signal_source: d.safety_hits?.length ? "safety" : "local",
+    signal_source: d.safety_hits?.length ? "safety" : source,
     signals: sig,
     decision: d,
     settings: { ...s },
@@ -849,6 +854,28 @@ function runDeterministicReplay(scenarios, catalog, settings) {
   };
 }
 
+// Pages keeps policy/storage local; only minimized case text reaches the sensor.
+async function localSignals(c, fixture, demoMs) {
+  if (jsDecide(c, null, S.settings).safety_hits.length || isCriticalCase(c, S.settings)) {
+    return { signals: null, latency_ms: 0, signal_source: "safety" };
+  }
+  if (!liveJevToken) return { signals: fixture || inferLocalSignals(c), latency_ms: demoMs, signal_source: "local" };
+  const res = await fetch(`${JEV_WORKER_URL}/infer`, {
+    method: "POST", signal: AbortSignal.timeout(20000),
+    headers: { "Content-Type": "application/json", Authorization: `Bearer ${liveJevToken}` },
+    body: JSON.stringify({
+      vehicle: { family: c.vehicle.family, fuel: c.vehicle.fuel, km: c.vehicle.km },
+      technician_note: c.technician_note, initial_measurements: c.initial_measurements,
+      dtc_codes: c.dtc_codes, recent_repairs: c.recent_repairs,
+      evidence: (c.evidence || []).map(({ id, result }) => ({ id, result })),
+    }),
+  });
+  const data = await res.json();
+  if (!res.ok && !(res.status === 503 && data.signal_source === "unavailable")) throw new Error(data.detail || "Jev bağlantısı kurulamadı.");
+  if (!["jev", "safety", "unavailable"].includes(data.signal_source)) throw new Error("Jev sensörü geçersiz yanıt verdi.");
+  return data;
+}
+
 // ---------- Local Client-Side API for GitHub Pages / Static Hosting ----------
 async function localApi(path, opts = {}) {
   const method = (opts.method || "GET").toUpperCase();
@@ -896,10 +923,10 @@ async function localApi(path, opts = {}) {
     };
 
     const sc = S.scenarios.find((x) => x.id === c.scenario_id);
-    const sig = sc?.fixture_signals?.initial || (SAFETY_RULES.some((r) => `${c.technician_note} ${c.initial_measurements}`.toLowerCase().includes(r)) ? null : inferLocalSignals(c));
-    const d = jsDecide(c, sig, S.settings);
+    const sensor = await localSignals(c, sc?.fixture_signals?.initial, 360);
+    const d = jsDecide(c, sensor.signals, S.settings);
 
-    applyLocalDecision(c, d, sig, sig ? 360 : 0, S.settings, false);
+    applyLocalDecision(c, d, sensor.signals, sensor.latency_ms, S.settings, false, sensor.signal_source);
     c.audit.push({ at: ts, actor: "ServicePilot (RAEP)", action: d.action, detail: d.reason });
 
     S.cases.unshift(c);
@@ -910,8 +937,10 @@ async function localApi(path, opts = {}) {
 
   const evMatch = path.match(/^\/cases\/([^/]+)\/evidence$/);
   if (evMatch && method === "POST") {
-    const c = S.cases.find((x) => x.id === evMatch[1]);
-    if (!c) throw new Error("Vaka bulunamadı");
+    const original = S.cases.find((x) => x.id === evMatch[1]);
+    if (!original) throw new Error("Vaka bulunamadı");
+    // Commit evidence only after the sensor succeeds or returns an explicit escalation.
+    const c = structuredClone(original);
 
     const eid = body.evidence_id;
     const valErr = validateEvidenceForCase(c, eid, S.settings);
@@ -932,13 +961,18 @@ async function localApi(path, opts = {}) {
     }];
     c.audit.push({ at: ts, actor: "Teknisyen", action: `Kanıt Eklendi: ${evLabel}`, detail: body.result });
 
-    const sc = S.scenarios.find((x) => x.id === c.scenario_id);
-    const sig = sc?.fixture_signals?.after?.[eid] || inferLocalSignals(c);
-    const d = jsDecide(c, sig, S.settings);
-
-    applyLocalDecision(c, d, sig, 340, S.settings, false);
+    if (isCriticalCase(original, S.settings)) {
+      c.pending_evidence = null;
+      c.audit.push({ at: ts, actor: "ServicePilot (Safety Gate)", action: "Doküman Eklendi · Eskalasyon Korundu", detail: "Uzman incelemesi sürüyor; Jev yeniden çağrılmadı." });
+    } else {
+      const sc = S.scenarios.find((x) => x.id === c.scenario_id);
+      const sensor = await localSignals(c, sc?.fixture_signals?.after?.[eid], 340);
+      const d = jsDecide(c, sensor.signals, S.settings);
+      applyLocalDecision(c, d, sensor.signals, sensor.latency_ms, S.settings, false, sensor.signal_source);
+      c.audit.push({ at: ts, actor: "ServicePilot (RAEP)", action: d.action, detail: d.reason });
+    }
     c.updated_at = ts;
-    c.audit.push({ at: ts, actor: "ServicePilot (RAEP)", action: d.action, detail: d.reason });
+    S.cases[S.cases.indexOf(original)] = c;
 
     S.userModified = true;
     try { localStorage.setItem(LOCAL_CASES_KEY, JSON.stringify(S.cases)); } catch {}
@@ -1031,7 +1065,7 @@ async function localApi(path, opts = {}) {
     if (!c) throw new Error("Vaka bulunamadı");
     const lastStep = c.steps?.at(-1) || {};
     const d = jsDecide(c, lastStep.signals, S.settings);
-    applyLocalDecision(c, d, lastStep.signals, lastStep.latency_ms || 0, S.settings, true);
+    applyLocalDecision(c, d, lastStep.signals, lastStep.latency_ms || 0, S.settings, true, lastStep.signal_source || "local");
     c.updated_at = new Date().toISOString();
     c.audit.push({ at: c.updated_at, actor: "ServicePilot (RAEP)", action: "Yeniden Hesaplandı", detail: `Politika parametreleri güncellendi (${d.action}).` });
     S.userModified = true;
@@ -1144,10 +1178,18 @@ function updateNavCounts() {
     if (S.mode === "api") {
       envLabel.textContent = "Canlı API";
       envDot.style.background = "var(--accent)";
+    } else if (liveJevToken) {
+      envLabel.textContent = "Canlı Jev · yerel kayıt";
+      envDot.style.background = "var(--accent)";
     } else {
       envLabel.textContent = "Demo Ortamı (Statik)";
       envDot.style.background = "var(--warning)";
     }
+  }
+  const connect = $("#jev-connect");
+  if (connect) {
+    connect.hidden = S.mode === "api";
+    connect.textContent = liveJevToken ? "Jev bağlantısı" : "Canlı Jev'i aç";
   }
 }
 
@@ -1275,7 +1317,7 @@ function renderOverview() {
   if (postureEl) {
     postureEl.innerHTML = `
       <div class="section-header"><h3>Çalışma ortamı</h3><a href="#policy" class="inline-link">RAEP ayarları</a></div>
-      <p>${S.mode === "api" ? "FastAPI bağlı. Yeni vakalar Jev ile değerlendirilir; temsili kayıtlar ayrıca etiketlenir." : "Yerel demo. Sinyaller temsili veya yerel kurallarla üretilir; canlı Jev çağrılmaz."}</p>
+      <p>${S.mode === "api" ? "FastAPI bağlı. Yeni vakalar Jev ile değerlendirilir; temsili kayıtlar ayrıca etiketlenir." : liveJevToken ? "Canlı Jev sensörü bağlı. RAEP tarayıcıda çalışır; kayıtlar yalnız bu cihazda saklanır. İlk kayıtlar ve replay temsili kalır." : "Yerel demo. Sinyaller temsili veya yerel kurallarla üretilir; canlı Jev çağrılmaz."}</p>
       <p class="field-hint">Senaryolar sentetik; maliyetler uzman varsayımıdır. Saha doğruluğu veya tasarruf iddiası değildir.</p>
     `;
   }
@@ -2836,6 +2878,37 @@ function bindEvents() {
 (async function init() {
   bindEvents();
   renderFormDtcChips();
+  try { liveJevToken = sessionStorage.getItem(JEV_TOKEN_KEY) || ""; } catch {}
+  $("#jev-connect").addEventListener("click", () => {
+    $("#jev-access-error").textContent = "";
+    $("#jev-access-code").value = "";
+    $("#jev-access-modal").showModal();
+    $("#jev-access-code").focus();
+  });
+  $("#jev-disconnect").addEventListener("click", () => {
+    liveJevToken = "";
+    try { sessionStorage.removeItem(JEV_TOKEN_KEY); } catch {}
+    $("#jev-access-modal").close();
+    renderAll();
+  });
+  $("#jev-access-form").addEventListener("submit", async (event) => {
+    event.preventDefault();
+    const button = $("#jev-access-submit");
+    button.disabled = true;
+    try {
+      const code = $("#jev-access-code").value.trim();
+      if (!code) throw new Error("Demo erişim kodunu girin.");
+      const res = await fetch(`${JEV_WORKER_URL}/auth`, { method: "POST", signal: AbortSignal.timeout(10000),
+        headers: { Authorization: `Bearer ${code}` } });
+      if (!res.ok) throw new Error("Erişim kodu doğrulanamadı.");
+      liveJevToken = code;
+      try { sessionStorage.setItem(JEV_TOKEN_KEY, code); } catch {}
+      $("#jev-access-code").value = "";
+      $("#jev-access-modal").close();
+      renderAll();
+    } catch (error) { $("#jev-access-error").textContent = error.message; }
+    finally { button.disabled = false; }
+  });
 
   // Mode probe: check if backend API is reachable
   const isStaticHost = location.hostname.endsWith("github.io") || location.protocol === "file:";

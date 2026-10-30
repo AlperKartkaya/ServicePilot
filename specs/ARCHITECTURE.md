@@ -94,3 +94,7 @@ SQLite `data/servicepilot.db`: `cases(id TEXT PK, data TEXT JSON, created_at)`, 
 ## 7. Operasyonel karar izi [FR-18, FR-21]
 
 Vaka ekranı `Jev sinyalleri → RAEP kararı → tek sıradaki işlem` ayrımını görünür tutar. Tam hesaplar, ham sinyaller, geçmiş ve araç ekleri açılır bölümlerdedir. Her karar adımı `settings` snapshot’ını ve `signal_source` bilgisini taşır. Kaynağı olmayan eski adım `unknown` kalır; `is_demo` tek başına sonraki adımların temsili olduğunu kanıtlamaz. Yeniden hesaplama kaynak/snapshot geçmişini silmez ve yeni Jev çağrısı yapmaz. Politika matematiği değişmemiştir.
+
+
+## GitHub Pages + Worker sensörü [FR-22, ADR-11]
+`Pages vaka metni → kimlik + origin + boyut/şema + yaklaşık oran sınırı → sabit Jev soruları → typed sinyaller → tarayıcı RAEP → yerel kayıt/insan işlemi`. Bu yol FastAPI veya SQLite'ı Worker'a taşımaz. Python `app/raep.py` ve mevcut JS politika matematiği değişmez. Worker sözleşmesi `app/jev.py` + `app/catalog.py` kaynaklarından `uv run python -m worker.export_contract` ile üretilir; drift testi vardır. Güvenlik kapısı hem istemcide hem sensörde modelden önce çalışır. Yetki/kota hatasında kanıt geçici kopyası kaydedilmez. Sağlayıcı hatası `unavailable` ile eskale edilir; fixture'a sessiz dönüş yoktur. Yeniden hesaplama kaynak etiketini ve geçmişi korur.

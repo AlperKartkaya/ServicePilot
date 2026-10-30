@@ -68,3 +68,9 @@ Durum: `[ ]` yapılacak · `[x]` bitti. Her görev gereksinim ID'si taşır.
 ## M8 — GitHub Pages yayını [NFR-9, FR-20]
 - [x] Yalnız statik dosyaları yayımlayan otomatik workflow
 - [x] GitHub Pages etkinleştirme ve gerçek HTTPS yayın kontrolü
+
+
+## M9 — Canlı Jev Worker [FR-22]
+- [x] Secret, kimlik, origin, sabit soru ve limit kontrollü sensör
+- [x] Pages bağlantısı, kaynak/gecikme ve hata bütünlüğü
+- [ ] Mock regresyonları, gerçek Worker/Jev ve Pages doğrulaması

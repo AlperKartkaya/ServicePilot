@@ -125,6 +125,7 @@
             <kbd class="search-kbd" aria-hidden="true">/</kbd>
           </div>
 
+          <button type="button" id="jev-connect" class="btn btn-secondary btn-sm">Canlı Jev'i aç</button>
           <div class="env-indicator" id="env-indicator" title="Çalışma modu ve veri kaynağı durumu">
             <span class="env-dot" id="env-dot" aria-hidden="true"></span>
             <span id="env-label">Demo Ortamı</span>
@@ -655,6 +656,25 @@ U(e)     = L(s) · (err(s) − err'(e)) − λ · C(e)</pre>
   </dialog>
 
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  <dialog class="modal" id="jev-access-modal" aria-labelledby="jev-access-title">
+    <form class="modal-box" id="jev-access-form">
+      <div class="modal-head"><h2 id="jev-access-title">Canlı Jev sensörü</h2></div>
+      <div class="modal-body">
+        <p>Jev olasılık üretir; RAEP tarayıcıda karar verir. Kayıtlar bu cihazda kalır.</p>
+        <p class="field-hint">Vaka metni TypeSafe'e gönderilir. Gerçek müşteri verisi girmeyin. Cloudflare ve Jev kullanım kotaları ayrıdır.</p>
+        <div class="field"><label for="jev-access-code">Demo erişim kodu</label>
+        <input id="jev-access-code" type="password" autocomplete="off" maxlength="128" required aria-describedby="jev-access-error">
+        <p id="jev-access-error" class="field-error" role="alert"></p></div>
+        <p class="field-hint">Bağlandıktan sonra yeni vaka açın. Eski adımlar ve sentetik replay değişmez. Kod yalnız bu sekmenin oturumunda tutulur.</p>
+      </div>
+      <div class="modal-foot">
+        <button type="button" class="btn btn-secondary" data-close-modal="jev-access-modal">Vazgeç</button>
+        <button type="button" id="jev-disconnect" class="btn btn-secondary">Statik demoya dön</button>
+        <button type="submit" id="jev-access-submit" class="btn btn-primary">Bağlan</button>
+      </div>
+    </form>
+  </dialog>
+
   <script src="app.js" type="module"></script>
 </body>
 </html>

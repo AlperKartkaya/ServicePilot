@@ -6,6 +6,8 @@ on:
     paths:
       - 'static/**'
       - 'tests/test_frontend.mjs'
+      - 'tests/test_worker.mjs'
+      - 'worker/**'
       - '.github/workflows/pages.yml'
   workflow_dispatch:
 
@@ -29,7 +31,7 @@ jobs:
       - name: Check frontend
         run: |
           node --check static/app.js
-          node --test tests/test_frontend.mjs
+          node --test tests/test_frontend.mjs tests/test_worker.mjs
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
         with:

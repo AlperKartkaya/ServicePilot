@@ -20,3 +20,7 @@
 - Show the source per step: live Jev, fixture/local demo, safety bypass, or unknown legacy source. Do not present seeded latency as measured API performance.
 - Preserve historical policy settings; show current settings only for a requested recompute.
 - Existing `.gitignore` edit belongs to the user and stays outside commits.
+
+
+## Live Jev extension — 2026-10-30 [FR-22]
+Scope: stateless Worker, exported Python questions, localApi creation/evidence/recompute provenance, connection dialog, deployment config/docs and tests. No persistence migration or FastAPI behavior change. Lock security boundaries with Worker tests and failed-write/history tests before integration. Then review secrets, payload minimization, safety bypass, no fake fixture fallback, rate-limit caveat and deployed asset parity separately.
