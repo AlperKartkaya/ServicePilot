@@ -46,7 +46,7 @@ State (JSON): `vehicle`, `technician_note`, `dtc_codes`, `recent_repairs`, `coll
 | `priority` | score | 4 seviye: rutin → yolda kaldı/güvenlik |
 | `has_<evidence>` | noul | Vaka bu kanıtın **sonucunu** zaten içeriyor mu? (serbest metinde gizli kanıtı tespit) |
 
-Hepsi aynı state üzerinde paralel, tek round-trip (~0.4 sn).
+Hepsi aynı state üzerinde paralel, tek round-trip. Gecikme canlı adımda ölçülür; demo gecikmeleri performans kanıtı değildir.
 
 ## 4. RAEP algoritması
 
@@ -90,3 +90,7 @@ Doğruluk: tam (yaprak eşit) ve hiyerarşik (hedef, beklenen yaprağın atası)
 ## 6. Kalıcılık
 
 SQLite `data/servicepilot.db`: `cases(id TEXT PK, data TEXT JSON, created_at)`, `kv(key PK, value JSON)` (ayarlar). ORM yok.
+
+## 7. Operasyonel karar izi [FR-18, FR-21]
+
+Vaka ekranı `Jev sinyalleri → RAEP kararı → tek sıradaki işlem` ayrımını görünür tutar. Tam hesaplar, ham sinyaller, geçmiş ve araç ekleri açılır bölümlerdedir. Her karar adımı `settings` snapshot’ını ve `signal_source` bilgisini taşır. Kaynağı olmayan eski adım `unknown` kalır; `is_demo` tek başına sonraki adımların temsili olduğunu kanıtlamaz. Yeniden hesaplama kaynak/snapshot geçmişini silmez ve yeni Jev çağrısı yapmaz. Politika matematiği değişmemiştir.

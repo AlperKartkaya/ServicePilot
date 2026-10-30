@@ -92,3 +92,6 @@ Base: `http://localhost:8000`. JSON in/out. Otomatik OpenAPI: `/docs`.
 - 404 `{"detail": "case not found"}`
 - 409 `{"detail": "case closed"}` — routed/escalated vakaya kanıt eklenemez.
 - 422 — doğrulama (boş not, bilinmeyen `evidence_id`).
+
+### Karar adımı kaynağı [FR-21]
+`Step.signal_source`: `jev` (canlı API), `fixture` (hazır sentetik kayıt), `local` (statik demo), `safety` (Jev çağrılmadan güvenlik kuralı), `unavailable` (Jev hatası) veya `unknown` (kaynağı kaydedilmemiş eski adım). Yeniden hesaplama kaynak bilgisini devralır; yeni Jev çağrısı yapmaz. Bu alan eklemelidir; eski kayıtlara migration uygulanmaz. Temsili gecikmeler UI’da performans ölçümü olarak kullanılmaz.
