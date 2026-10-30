@@ -67,4 +67,4 @@ Durum: `[ ]` yapılacak · `[x]` bitti. Her görev gereksinim ID'si taşır.
 
 ## M8 — GitHub Pages yayını [NFR-9, FR-20]
 - [x] Yalnız statik dosyaları yayımlayan otomatik workflow
-- [ ] GitHub Pages etkinleştirme ve gerçek HTTPS yayın kontrolü
+- [x] GitHub Pages etkinleştirme ve gerçek HTTPS yayın kontrolü

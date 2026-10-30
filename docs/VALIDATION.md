@@ -28,3 +28,15 @@ The behavior-lock/writer plan in REFACTOR_PLAN.md preceded edits; a separate fin
 - Existing Starlette/httpx deprecation warning remains. No project linter, TypeScript typecheck or frontend build is configured; syntax, tests and browser checks are the available gates. No tools were upgraded to silence the warning.
 - No production deployment, GitHub Pages publication, Safari/device verification, real Isuzu data calibration, ProEye/DMS integration or field safety certification. Cost/reliability assumptions remain labelled assumptions.
 - User's pre-existing `.gitignore` edit is preserved and excluded from commits.
+
+
+## GitHub Pages deployment — 2026-10-30 [NFR-9, FR-20]
+- Live URL: https://alperkartkaya.github.io/ServicePilot/ . Personal portfolio repository unchanged.
+- Deployment commit: `038c685`; [successful Actions run](https://github.com/AlperKartkaya/ServicePilot/actions/runs/41056043358). Pages source is GitHub Actions; HTTPS enforced. Only `static/` is uploaded.
+- Fresh local gates: 22 Python tests, 8 JavaScript tests, JS syntax, workflow YAML/artifact boundary assertions and first-party diff check passed.
+- Live HTTPS check: all three assets (`index.html`, `app.js`, `style.css`) match local source SHA-256 hashes. `.env`, `data/servicepilot.db`, `app/jev.py` return HTTP 404.
+- Real public Chromium check: labelled static mode; CAN scenario creation, evidence submission, routing confirmation and reload persistence passed. No page JavaScript errors or horizontal overflow at 390/768/1440 px. Only this browser context's local data changed; no server seed/reset was called.
+- Screenshots: `/tmp/servicepilot-pages-live-desktop.png`, `/tmp/servicepilot-pages-live-mobile.png`.
+- Actions succeeded with runner migration / Node 20 action-runtime deprecation annotations; GitHub ran those actions on Node 24. No app runtime dependencies changed.
+- Scope: static, browser-local demo, not live Jev or shared server storage. Cloudflare authentication was checked, but no Worker, public paid-inference proxy, secret upload or paid resource was created. Cloudflare's free hosting does not imply free Jev inference. A live backend needs explicit access/usage limits and persistent storage; CORS alone is not access control.
+- Reference: [GitHub's static publishing workflow](https://github.com/actions/starter-workflows/blob/main/pages/static.yml), adapted to upload `static/`, not the entire repository.
