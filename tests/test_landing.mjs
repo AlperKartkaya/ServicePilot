@@ -58,3 +58,11 @@ test('demo has a directory entrypoint and both landing CTAs preserve relative Pa
     assert.ok(page.includes("location.replace('demo/' + location.search + location.hash)"));
   }
 });
+
+test('landing uses the selected headline in the hero and page title', () => {
+  const html = readFileSync(new URL('../static/index.html', import.meta.url), 'utf8');
+  const headline = 'HER DURUMDA, HIZLA SIRADAKİ ADIMA';
+  const hero = html.match(/<h1 id="hero-title">(.*?)<\/h1>/)[1].replace(/<br>/g, ' ');
+  assert.equal(hero, headline);
+  assert.ok(html.includes(`<title>ServicePilot — ${headline}</title>`));
+});

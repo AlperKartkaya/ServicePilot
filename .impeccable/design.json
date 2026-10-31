@@ -47,7 +47,7 @@
     }
   ],
   "narrative": {
-    "northStar": "Her kanıt, doğru adıma.",
+    "northStar": "HER DURUMDA, HIZLA SIRADAKİ ADIMA",
     "overview": "Scoped to static/index.html; normative tokens are in docs/landing/DESIGN.md. Root DESIGN.md remains unchanged for the operational application.",
     "keyCharacteristics": [
       "One synthetic case",

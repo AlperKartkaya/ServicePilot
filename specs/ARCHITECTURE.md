@@ -2,16 +2,9 @@
 
 ## 1. Bileşenler
 
-```mermaid
-flowchart TD
-  UI["static/demo/ + app.js + style.css<br/>Tarayıcı UI · build yok"] -->|fetch /api/*| API["app/main.py<br/>FastAPI · vaka yaşam döngüsü · replay"]
-  API --> STORE["app/store.py<br/>SQLite · vakalar + ayarlar"]
-  API --> JEV["app/jev.py<br/>Jev / TypeSafe · semantic sensor"]
-  API --> RAEP["app/raep.py<br/>RAEP · saf karar fonksiyonları"]
-  CATALOG["app/catalog.py<br/>Taksonomi · kanıt · safety · ayarlar"] --> JEV
-  CATALOG --> RAEP
-  SCENARIOS["app/scenarios.py<br/>Demo / replay senaryoları"] --> API
-```
+![Tarayıcı UI, FastAPI, SQLite, Jev semantic sensor, RAEP, katalog ve senaryolar arasındaki bağımlılıklar.](../docs/assets/architecture-components.png)
+
+[Vektör kaynağı](../docs/assets/architecture-components.svg)
 
 Bu diyagram yerel FastAPI yoludur; Pages + Worker yolu belgenin sonunda açıklanır.
 
@@ -19,21 +12,11 @@ Jev'i başka bir typed-decision modeliyle değiştirmek = `app/jev.py`'yi deği�
 
 ## 2. Karar akışı (bir adım)
 
-```mermaid
-flowchart TD
-  A[Vaka state] --> G{Safety gate}
-  G -- kural eşleşti --> E1[ESCALATE]
-  G -- temiz --> J[Jev tek istek: route, sufficient, critical, priority, has_*]
-  J --> C{critical >= tau_crit}
-  C -- evet --> E2[ESCALATE]
-  C -- hayır --> R{leaf p >= tau_route ve sufficient >= tau_suff}
-  R -- evet --> RT[ROUTE yaprak]
-  R -- hayır --> U{max U e > 0 ve istek < limit}
-  U -- evet --> REQ[REQUEST_EVIDENCE e*]
-  U -- hayır --> H{p node >= tau_route olan en derin düğüm}
-  H -- var --> RN[ROUTE düğüm]
-  H -- yok --> E3[ESCALATE belirsiz]
-```
+![Vaka önce güvenlikten geçer; Jev sinyallerinden sonra RAEP yeterli bilgide uzman ekip, yararlı ek kontrolde kanıt isteği, risk veya çözülemeyen belirsizlikte insan uzman önerir. Kanıt sonrası döngü yeniden başlar.](../docs/assets/architecture-decision.png)
+
+[Vektör kaynağı](../docs/assets/architecture-decision.svg)
+
+Karar sırası kodla aynıdır: açık tehlike → Jev erişimi / kritik risk → yeterli bilgiyle uzmanlık → yararlı ek kanıt (istek limiti içinde) → güvenilen uzmanlık (gerekirse üst ekip) → insan uzman. Diyagramdaki “hazırla”, uygulamada insanın onayladığı veya değiştirdiği yönlendirme önerisidir; otomatik teşhis veya ekibe teslim değildir.
 
 ## 3. Jev soru tasarımı (FR-3)
 

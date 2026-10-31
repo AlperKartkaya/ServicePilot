@@ -1,0 +1,45 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1140" height="740" viewBox="0 0 1140 740" role="img" aria-labelledby="title desc">
+<title id="title">Bir vakanın arkasındaki parçalar</title><desc id="desc">Yerel FastAPI yolu: servis ekranı vakayı iletir, FastAPI adımları koordine eder ve SQLite kaydını yönetir. Jev olasılık sinyalleri üretir; RAEP bu sinyallerle sıradaki işlemi seçer. Ortak katalog uzmanlıkları, kanıtları, güvenlik kurallarını ve ayarları sağlar. Demo senaryoları FastAPI tarafından açılır.</desc>
+<defs><marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M2 1 8 5 2 9" fill="none" stroke="#8a9d93" stroke-width="1.6" stroke-linejoin="round"/></marker></defs>
+<rect width="1140" height="740" rx="20" fill="#faf9f5"/>
+<g font-family="Avenir Next, Arial, sans-serif">
+<text x="48" y="57" fill="#273f39" font-size="32" font-weight="600"><tspan x="48" dy="0">Bir vakanın arkasındaki parçalar</tspan></text>
+<text x="48" y="93" fill="#52645d" font-size="20" font-weight="400"><tspan x="48" dy="0">Jev anlamlandırır. RAEP sıradaki işlemi seçer. İnsan son kararı verir.</tspan></text>
+<path d="M325 230H425" fill="none" stroke="#8a9d93" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#arrow)"/>
+<text x="342" y="217" fill="#52645d" font-size="16" font-weight="400"><tspan x="342" dy="0">vaka</tspan></text>
+<path d="M715 230H805" fill="none" stroke="#8a9d93" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#arrow)"/>
+<text x="738" y="198" fill="#52645d" font-size="15" font-weight="400"><tspan x="738" dy="0">oku /</tspan><tspan x="738" dy="20">kaydet</tspan></text>
+<path d="M570 315V386" fill="none" stroke="#8a9d93" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#arrow)"/>
+<text x="589" y="358" fill="#52645d" font-size="16" font-weight="400"><tspan x="589" dy="0">değerlendir</tspan></text>
+<path d="M715 472H805" fill="none" stroke="#8a9d93" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#arrow)"/>
+<text x="738" y="455" fill="#52645d" font-size="16" font-weight="400"><tspan x="738" dy="0">sinyal</tspan></text>
+<path d="M325 472H425" fill="none" stroke="#8a9d93" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#arrow)"/>
+<path d="M325 507V605Q325 619 340 619H940Q955 619 955 605V550" fill="none" stroke="#8a9d93" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#arrow)"/>
+<rect x="48" y="158" width="277" height="145" rx="14" fill="#efede7"/>
+<text x="72" y="197" fill="#273f39" font-size="23" font-weight="600"><tspan x="72" dy="0">Servis ekranı</tspan></text>
+<text x="72" y="234" fill="#273f39" font-size="19" font-weight="400"><tspan x="72" dy="0">Teknisyen notu, araç</tspan><tspan x="72" dy="27.55">bilgisi ve kanıtlar.</tspan></text>
+<text x="72" y="284" fill="#52645d" font-size="14" font-weight="400"><tspan x="72" dy="0">static/demo/ · app.js</tspan></text>
+<rect x="425" y="158" width="290" height="157" rx="14" fill="#dcebe3"/>
+<text x="449" y="197" fill="#285e50" font-size="23" font-weight="600"><tspan x="449" dy="0">Vaka koordinasyonu</tspan></text>
+<text x="449" y="234" fill="#285e50" font-size="19" font-weight="400"><tspan x="449" dy="0">İstekleri ve vaka</tspan><tspan x="449" dy="27.55">adımlarını yönetir.</tspan></text>
+<text x="449" y="296" fill="#52645d" font-size="14" font-weight="400"><tspan x="449" dy="0">app/main.py</tspan></text>
+<rect x="805" y="158" width="287" height="145" rx="14" fill="#efede7"/>
+<text x="829" y="197" fill="#273f39" font-size="23" font-weight="600"><tspan x="829" dy="0">Vaka kaydı</tspan></text>
+<text x="829" y="234" fill="#273f39" font-size="19" font-weight="400"><tspan x="829" dy="0">Vaka geçmişi ve</tspan><tspan x="829" dy="27.55">politika ayarları.</tspan></text>
+<text x="829" y="284" fill="#52645d" font-size="14" font-weight="400"><tspan x="829" dy="0">app/store.py · SQLite</tspan></text>
+<rect x="48" y="386" width="277" height="164" rx="14" fill="#f3e7d4"/>
+<text x="72" y="425" fill="#273f39" font-size="23" font-weight="600"><tspan x="72" dy="0">Ortak katalog</tspan></text>
+<text x="72" y="462" fill="#273f39" font-size="19" font-weight="400"><tspan x="72" dy="0">Uzmanlıklar, kanıtlar,</tspan><tspan x="72" dy="27.55">güvenlik ve ayarlar.</tspan></text>
+<text x="72" y="531" fill="#52645d" font-size="14" font-weight="400"><tspan x="72" dy="0">app/catalog.py</tspan></text>
+<rect x="425" y="386" width="290" height="164" rx="14" fill="#dcebe3"/>
+<text x="449" y="425" fill="#285e50" font-size="23" font-weight="600"><tspan x="449" dy="0">Jev / TypeSafe</tspan></text>
+<text x="449" y="462" fill="#285e50" font-size="19" font-weight="400"><tspan x="449" dy="0">Vakanın anlamından</tspan><tspan x="449" dy="27.55">olasılık sinyalleri çıkarır.</tspan></text>
+<text x="449" y="531" fill="#52645d" font-size="14" font-weight="400"><tspan x="449" dy="0">app/jev.py</tspan></text>
+<rect x="805" y="386" width="287" height="164" rx="14" fill="#dcebe3"/>
+<text x="829" y="425" fill="#285e50" font-size="23" font-weight="600"><tspan x="829" dy="0">RAEP</tspan></text>
+<text x="829" y="462" fill="#285e50" font-size="19" font-weight="400"><tspan x="829" dy="0">Risk ve kanıt maliyetiyle</tspan><tspan x="829" dy="27.55">sıradaki işlemi seçer.</tspan></text>
+<text x="829" y="531" fill="#52645d" font-size="14" font-weight="400"><tspan x="829" dy="0">app/raep.py</tspan></text>
+<text x="48" y="674" fill="#273f39" font-size="20" font-weight="600"><tspan x="48" dy="0">Demo ve replay vakaları</tspan></text>
+<text x="338" y="674" fill="#52645d" font-size="18" font-weight="400"><tspan x="338" dy="0">app/scenarios.py → FastAPI</tspan></text>
+<text x="48" y="709" fill="#52645d" font-size="16" font-weight="400"><tspan x="48" dy="0">Yerel çalışma yolu gösterilir. GitHub Pages + Worker yolu mimari belgesinde ayrıca açıklanır.</tspan></text>
+</g></svg>

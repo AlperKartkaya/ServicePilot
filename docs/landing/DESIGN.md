@@ -14,7 +14,7 @@ typography:
   display:
     fontFamily: "Manrope, sans-serif"
     fontWeight: 600
-    lineHeight: 1.08
+    lineHeight: 1.14
     letterSpacing: "-0.04em"
   body:
     fontFamily: "Manrope, sans-serif"
@@ -33,7 +33,7 @@ Persuade / Experience, scoped only to static/index.html and landing.css/js. The 
 Mint means useful evidence and forward motion; amber means insufficient evidence; coral means the safety gate. State is also written in text. Ivory headings and muted steel descriptions sit on near-black; no gradient type or decorative glow.
 
 ## Typography
-Self-hosted Manrope variable Latin + Turkish coverage. Hero 52–94px desktop, 46–72px mobile. Chapter headings 30–54px. Body 12–19px, compact metadata floor 11px. Measurement is deliberately oversized and tabular. No monospace costume.
+Self-hosted Manrope variable Latin + Turkish coverage. Hero 44–74px desktop (line-height 1.14), 34–60px mobile (line-height 1.16). The selected promise is “HER DURUMDA, HIZLA SIRADAKİ ADIMA”, composed in three lines; the smaller mobile floor keeps it readable at 320px. Chapter headings 30–54px. Body 12–19px, compact metadata floor 11px. Measurement is deliberately oversized and tabular. No monospace costume.
 
 ## Layout
 Opening: large left promise and unbranded concept truck lower-right. The six-step story is a persistent visual stage beside short chapters, not feature cards. At ≤700px the chapter text occupies the top of the stage and the evidence fills the rest. At <800px height or reduced-motion preference, scenes become normal-flow reading sections. No custom scroll container or mandatory scroll snapping.

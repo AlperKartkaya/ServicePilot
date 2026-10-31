@@ -100,3 +100,20 @@ Durum: `[ ]` yapılacak · `[x]` bitti. Her görev gereksinim ID'si taşır.
 - [x] RAEP formüllerini Typst kaynağı ve SVG renderlarıyla sunma; politika matematiğini koruma
 - [x] Mimari akışları Mermaid ile sunma; README SVG’sini olduğu gibi koruma
 - [x] Render/bağlantı doğrulaması ve yalnız ilgili dokümantasyonu commit/push
+
+## M15 — Mimari önizleme uyumluluğu [NFR-11]
+- [x] Mermaid kaynaklarını ayrı dosyalarda tutup mimari belgesinde render edilmiş SVG gösterme
+- [x] Kaynak/render, görsel yükleme ve README SVG’sinin değişmediğini doğrulama
+
+## M16 — Anlaşılır diyagramlar ve yeni landing başlığı [FR-23, NFR-10/11]
+M14/M15’in Mermaid sürümleri bu adımda özel SVG/PNG ile değiştirilmiştir.
+- [x] Kullanıcının seçtiği başlık; mobil/masaüstü okunabilirlik ve güncel README ekran görüntüsü
+- [x] Sade Türkçe özel SVG mimari diyagramları ve PNG renderları; README akışını koruma
+- [x] Görsel/bağlantı, RAEP karar sırası ve landing regresyon doğrulaması
+
+- [x] Başlık puntosunu küçültme ve README ekran görüntüsünü yeniden alma [NFR-10/11]
+- [x] Başlığı hafif büyütme, satır aralığını açma ve README görselini eşitleme [NFR-10/11]
+
+## M17 — Onaylı başlık ve dokümantasyon yayını [FR-23, NFR-9/10/11]
+- [x] Son tipografi, README görseli ve mimari kaynak/render regresyon kontrolü
+- [ ] İlgili değişiklikleri commit/push; başarılı Pages workflow ve canlı başlık/demo yolu doğrulaması

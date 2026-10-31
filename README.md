@@ -19,7 +19,7 @@
 ServicePilot helps commercial-vehicle service teams turn incomplete cases into **useful evidence requests and prepared expert handoffs**. It is a decision layer, not a fault-diagnosis bot.
 
 <a href="https://alperkartkaya.github.io/ServicePilot/">
-  <img src="docs/assets/landing.webp" alt="ServicePilot landing: a commercial vehicle and a scroll-driven service-case story" width="960">
+  <img src="docs/assets/landing.webp" alt="ServicePilot landing: HER DURUMDA, HIZLA SIRADAKİ ADIMA — a commercial vehicle and a scroll-driven service-case story" width="960">
 </a>
 
 ## Jev measures. RAEP decides.

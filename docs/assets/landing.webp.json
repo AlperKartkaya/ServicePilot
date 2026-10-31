@@ -1,4 +1,4 @@
 {
-  "prompt": "Sourced raster: actual 1440x960 screenshot of https://alperkartkaya.github.io/ServicePilot/ captured 2026-10-31 during verified Pages release 0228975; source /tmp/servicepilot-release-landing.png. No UI reconstruction or compositing. Converted to WebP quality 92 for README. The truck inside the original page is a labelled generated concept visual, not a partner vehicle.",
-  "createdAt": "2026-10-31T17:36:11.541Z"
+  "prompt": "Sourced raster: unaltered 1440x960 Chromium viewport screenshot of the local ServicePilot landing at http://127.0.0.1:5187/, captured 2026-11-01. User-selected headline HER DURUMDA, HIZLA SIRADAKİ ADIMA with refined typography: 69.12px and line-height 1.14 at 1440px; mobile 38.22px and line-height 1.16 at 390px. Source /tmp/servicepilot-new-heading-1440.png; WebP quality 92. Local implementation preview, not a published release capture. No reconstruction or compositing. Truck is a labelled generated concept visual, not a partner vehicle.",
+  "createdAt": "2026-10-31T21:15:59.858Z"
 }
