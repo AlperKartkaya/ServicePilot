@@ -2871,6 +2871,7 @@ function bindEvents() {
 
 // ---------- Bootstrap ----------
 (async function init() {
+  if (!document.querySelector(".app-shell")) return;
   bindEvents();
   renderFormDtcChips();
   // Public Pages is live by default; loopback/static development never spends provider credits.
@@ -2930,3 +2931,5 @@ function bindEvents() {
   renderPolicySection();
   renderAll();
 })();
+
+export { FALLBACK_CATALOG, FALLBACK_SCENARIOS, jsDecide };

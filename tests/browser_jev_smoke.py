@@ -43,11 +43,13 @@ with sync_playwright() as p:
     def public_asset(route):
         from urllib.parse import urlparse
         name = urlparse(route.request.url).path.removeprefix('/ServicePilot/').strip('/') or 'index.html'
-        assert name in {'index.html', 'app.js', 'style.css'}
+        if name == 'demo':
+            name = 'demo/index.html'
+        assert name in {'index.html', 'demo/index.html', 'app.js', 'style.css'}
         route.fulfill(path=str(Path(__file__).resolve().parents[1] / 'static' / name))
 
     page.route(url + '/**', public_asset)
-    page.goto(url + '/', wait_until='networkidle')
+    page.goto(url + '/demo/#overview', wait_until='networkidle')
     assert page.locator('#jev-access-modal').count() == 0
     expect(page.locator('#env-label')).to_contain_text('Canlı Jev')
     page.locator('[data-start-demo="can_comm"]').click()
@@ -69,13 +71,13 @@ with sync_playwright() as p:
     assert len(requests) == before
     page.reload(wait_until='networkidle')
     expect(page.locator('#env-label')).to_contain_text('Canlı Jev')
-    page.goto(url + '/#overview', wait_until='networkidle')
+    page.goto(url + '/demo/#overview', wait_until='networkidle')
     outcome['status'] = 503
     page.locator('[data-start-demo="can_comm"]').click()
     expect(page.locator('.sensor-stage')).to_contain_text('Jev erişilemedi')
     expect(page.locator('.next-action-panel')).to_contain_text('Uzman')
     before = len(requests)
-    page.goto(url + '/#overview', wait_until='networkidle')
+    page.goto(url + '/demo/#overview', wait_until='networkidle')
     page.locator('[data-start-demo="critical_fire"]').click()
     expect(page.locator('.sensor-stage')).to_contain_text('Jev çağrılmadı')
     assert len(requests) == before

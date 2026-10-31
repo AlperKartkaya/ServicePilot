@@ -57,3 +57,8 @@
 - **Bağlam:** Kullanıcı, ziyaretçiden demo kodu istemeyi açıkça reddetti; kendi sunucu anahtarıyla herkesin canlı kullanmasını istedi.
 - **Karar:** ADR-11'in erişim kodu ve opt-in bölümleri kaldırılır. Public Pages otomatik canlıdır; localhost statik fixture testleri yerel kalır. `/auth`, kod modalı, token saklama ve `DEMO_ACCESS_TOKEN` kaldırılır; `TYPESAFE_API_KEY` Worker secret olarak kalır.
 - **Sonuç:** Origin kontrolü kimlik değildir; endpoint bilerek anonim kullanıma açıktır. Sabit sorular, boyut/şema doğrulaması, safety gate ve 5/dakika/Cloudflare-konumu yaklaşık ortak limit korunur. Bu limit katı küresel harcama tavanı değildir; sağlayıcı kredisi herkese açık kullanımla tüketilebilir.
+
+## ADR-13 — Bağımsız landing, paylaşılan karar motoru [FR-23]
+- **Karar:** `index.html` kaydırmalı vaka deneyimi, `demo/index.html` mevcut operasyonel arayüzdür. Eski hash rotaları ve `app.html` bağlantıları `demo/` hedefine query/hash korunarak replace ile taşınır. Demo ortak `../app.js` ve `../style.css` dosyalarını kullanır; kayıt anahtarları/origin değişmez. `app.js` yalnız uygulama kabuğu varsa bootstrap yapar; landing aynı saf `jsDecide` fonksiyonunu ve senaryoları import eder. Politika kopyalanmaz.
+- **Sınır:** Landing sentetik sinyaller üzerinde gerçek RAEP hesaplar; Jev/provider çağrısı, vaka kaydı veya müşteri verisi yoktur. Fotoğraf analizi ürün vizyonudur. Kaydırma gerçek saha müdahalesi değildir.
+- **Uygulama:** Sabit sürüm yerel Lenis ve GSAP/ScrollTrigger, tek GSAP ticker ile senkronizasyon. Build sistemi eklenmez. Hareket kapalıyken sticky/katmanlar kaldırılır, tüm sahneler görünür.

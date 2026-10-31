@@ -103,3 +103,8 @@ Ayrı Cloudflare Worker; FastAPI uçlarını değiştirmez. Endpoint bilerek ano
 - `POST /infer`: `{vehicle:{family,fuel,km}, technician_note, initial_measurements?, dtc_codes?, recent_repairs?, evidence?:[{id,result}]}`. Katalog/soru/model istemciden alınmaz, VIN/konum/görseller gönderilmez. Gövde en fazla 32 KiB, alanlar mevcut vaka limitleriyle sınırlı.
 - Yanıt: `{signals, latency_ms, signal_source:"jev"|"safety"|"unavailable"}`. Sinyal şekli mevcut Step sözleşmesiyle aynıdır. Güvenlik kuralı `signals:null, latency_ms:0` döner.
 - `403` origin, `413` boyut, `422` şema, `429` yaklaşık ortak 5/dakika/Cloudflare-konumu limiti; istemci yazma yapmaz. `503` sağlayıcı/yanıt/eksik sunucu anahtarı hatası: `signals:null, signal_source:"unavailable"`; RAEP insan eskalasyonunu kaydeder. Hata yanıtları sağlayıcı gövdesini/anahtarı içermez. `/auth` kaldırıldı (`404`).
+
+## Statik sayfa yolları [FR-23]
+- `/ServicePilot/`: kaydırmalı landing; API/sağlayıcı çağrısı veya kayıt yazımı yapmaz.
+- `/ServicePilot/demo/`: önceki operasyonel MVP. Backend üzerinde `/demo/` ve `/servicepilot/demo/` aynı statik dizinden sunulur.
+- Eski kök uygulama hash bağlantıları ve `app.html` query/hash korunarak `demo/` yoluna istemci tarafında taşınır. API sözleşmeleri ve origin tabanlı localStorage anahtarları değişmez.

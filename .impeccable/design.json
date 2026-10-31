@@ -1,0 +1,72 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-10-31T16:56:20.634130+00:00",
+  "title": "ServicePilot scroll landing",
+  "extensions": {
+    "shadows": [
+      {
+        "name": "physical-note",
+        "value": "0 18px 45px #0005",
+        "purpose": "Only the technician note has paper-like depth."
+      }
+    ],
+    "motion": [
+      {
+        "name": "scroll-scrub",
+        "value": "0.35s",
+        "purpose": "Story timeline tracks native page scroll."
+      },
+      {
+        "name": "focus",
+        "value": "2px solid #86e1c4; outline-offset: 6px",
+        "purpose": "Visible keyboard focus."
+      }
+    ],
+    "breakpoints": [
+      {
+        "name": "stacked-story",
+        "value": "700px"
+      },
+      {
+        "name": "compact-desktop",
+        "value": "1000px"
+      },
+      {
+        "name": "linear-short-screen",
+        "value": "799px height"
+      }
+    ]
+  },
+  "components": [
+    {
+      "name": "Chapter link",
+      "kind": "nav",
+      "description": "Real anchor; mint underline identifies the current narrative step.",
+      "html": "<a class=\"chapter\" href=\"#evidence\" aria-current=\"step\"><span>03</span>Kanıt</a>",
+      "css": ".chapter{display:inline-flex;flex-direction:column;gap:9px;padding:10px 12px 15px 0;border-bottom:1px solid #86e1c4;color:#86e1c4;font:11px Manrope,sans-serif}.chapter:focus-visible{outline:2px solid #86e1c4;outline-offset:6px}"
+    }
+  ],
+  "narrative": {
+    "northStar": "Her kanıt, doğru adıma.",
+    "overview": "Scoped to static/index.html; normative tokens are in docs/landing/DESIGN.md. Root DESIGN.md remains unchanged for the operational application.",
+    "keyCharacteristics": [
+      "One synthetic case",
+      "Actual RAEP policy",
+      "Midnight service bay",
+      "Human safety gate"
+    ],
+    "rules": [
+      {
+        "name": "Signal is not decision",
+        "body": "Jev fixture probabilities feed RAEP; no fabricated diagnosis.",
+        "section": "components"
+      }
+    ],
+    "dos": [
+      "Keep source disclosures and native anchors."
+    ],
+    "donts": [
+      "No field-performance or completed partnership claims."
+    ]
+  }
+}

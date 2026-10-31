@@ -30,6 +30,8 @@ Her gereksinim bir kabul kriteri (AC) taşır. Kod değişiklikleri bu ID'lere r
 
 | FR-22 | Herkese açık canlı Jev | GitHub Pages tüm ziyaretçiler için otomatik canlı Worker sensörü kullanır; erişim kodu/giriş/istemci anahtarı yoktur. `TYPESAFE_API_KEY` yalnız Worker secret'tır ve sahibi Cloudflare panelinden değiştirir. Yeni vaka ve normal kanıt adımı canlıdır; RAEP tarayıcıda, kayıtlar cihazda kalır. Güvenlik kapısı ve yaklaşık oran sınırı korunur. Kota hatası girdiyi korur; sağlayıcı hatası `unavailable` + insan eskalasyonudur. Temsili kayıtlar ve replay canlı diye sunulmaz. |
 
+| FR-23 | Kaydırmayla ilerleyen vaka anlatısı | Varsayılan landing page koyu, az metinli bir deneyimde tek sentetik vakayı baştan sona çözer. Lenis + GSAP ScrollTrigger ile vaka, Jev sinyalleri, RAEP kanıt seçimi, ölçüm sonucu, yeniden değerlendirme ve uzman devri görünür. Kararlar mevcut JS RAEP motoruyla hesaplanır; canlı Jev çağrısı, saha ölçümü veya arıza teşhisi gibi sunulmaz. Kritik alternatif güvenlik kapısıyla insan uzmana geçer. Çok modlu vizyon ile mevcut metin/JSON MVP ayrılır. Eski uygulama hash rotaları korunur. Landing `/ServicePilot/`, operasyonel MVP `/ServicePilot/demo/` altında sunulur; sağ üst ve kapanışta “Demoyu dene” bağlantıları bulunur. Eski `app.html` bağlantıları query/hash korunarak demoya taşınır; cihaz kayıt anahtarları değişmez. |
+
 ## Fonksiyonel olmayan gereksinimler
 
 | ID | Gereksinim | Kabul kriteri |
@@ -43,3 +45,5 @@ Her gereksinim bir kabul kriteri (AC) taşır. Kod değişiklikleri bu ID'lere r
 | NFR-7 | Dürüstlük | Doğrulanmamış Isuzu metriği UI/spec'te gösterilmez; katalog maliyetleri "varsayım" etiketlidir. |
 | NFR-8 | Dayanıklılık | Jev hatası/zaman aşımında vaka bozulmaz; adım `ESCALATE` (sebep: "Jev erişilemedi") olarak kaydedilir. |
 | NFR-9 | Statik yayın | GitHub Pages yalnız `static/` dosyalarını HTTPS ile `/ServicePilot/` altında yayımlar. Anahtar, SQLite ve Python kaynakları yayın artifact'ına girmez. Statik mod canlı Jev gibi sunulmaz. `main` güncellemeleri ve manuel tetikleme aynı kontrollü workflow'u kullanır. |
+
+| NFR-10 | Landing erişilebilirliği | Klavye ile bölüm seçimi, görünür odak, semantik anlatı, 390/768/1440px taşmasız düzen. Azaltılmış hareket veya animasyon kütüphanesi yokluğunda tüm adımlar normal belge akışında okunur. Yerel vendor dosyaları ve fontlar; build adımı gerekmez. |

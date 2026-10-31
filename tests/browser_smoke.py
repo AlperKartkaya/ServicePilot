@@ -25,7 +25,7 @@ with sync_playwright() as p:
     page.on("pageerror", lambda error: errors.append(str(error)))
 
     def go(route):
-        page.goto(args.url + "/" + route)
+        page.goto(args.url + "/demo/" + route)
         page.wait_for_load_state("networkidle")
         assert page.evaluate("scrollY") == 0, "Navigation must start at the top"
 

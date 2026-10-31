@@ -3,658 +3,141 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>ServicePilot — Doğru kanıt, doğru uzman</title>
-  <meta name="theme-color" content="#090D13">
-  <meta name="description" content="Ticari araç satış sonrası servis ağları için aktif kanıt orkestrasyonu ve uzman yönlendirme karar destek platformu.">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css">
+  <meta name="theme-color" content="#080c0e">
+  <meta name="description" content="Bir servis vakasını kaydırarak ilerletin. ServicePilot ile eksik kanıttan risk kontrollü uzman yönlendirmesine uzanan karar döngüsünü keşfedin.">
+  <title>ServicePilot — Her kanıt, doğru adıma.</title>
+  <link rel="icon" href="assets/logo.svg" type="image/svg+xml">
+  <link rel="preload" href="assets/manrope-latin-ext.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="assets/service-truck.webp" as="image" fetchpriority="high">
+  <link rel="stylesheet" href="landing.css">
+  <script>
+    // Preserve previously shared operational routes, without treating story anchors as app routes.
+    if (/^#(overview|cases|new|review|queues|policy|replay|detail)(\/|$)/.test(location.hash)) {
+      location.replace('demo/' + location.search + location.hash);
+    }
+  </script>
+  <script src="vendor/gsap.min.js" defer></script>
+  <script src="vendor/ScrollTrigger.min.js" defer></script>
+  <script src="vendor/lenis.min.js" defer></script>
+  <script src="landing.js" type="module"></script>
 </head>
 <body>
-  <a class="skip-link" href="#main">İçeriğe geç</a>
-  <div class="app-shell">
-    <!-- Mobile backdrop -->
-    <div class="sidebar-backdrop" id="sidebar-backdrop" hidden></div>
+  <a class="skip" href="#story">Vaka anlatısına geç</a>
+  <header class="site-header">
+    <a class="wordmark" href="#top" aria-label="ServicePilot başlangıç"><img src="assets/logo.svg" width="36" height="36" alt="">ServicePilot<span class="brand-period">.</span></a>
+    <nav aria-label="Ana menü">
+      <a href="#story">Nasıl çalışır?</a>
+      <a href="#approach">Yaklaşımımız</a>
+    </nav>
+    <a class="header-action" href="demo/">Demoyu dene <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14m-6-6 6 6-6 6"/></svg></a>
+  </header>
 
-    <!-- Persistent Sidebar -->
-    <aside class="sidebar" id="sidebar" aria-label="Ana navigasyon">
-      <div class="sidebar-brand">
-        <a href="#overview" class="brand-link" aria-label="ServicePilot Genel Bakış">
-          <span class="brand-mark" aria-hidden="true">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <polygon points="12 2 22 8.5 22 15.5 12 22 2 15.5 2 8.5 12 2"></polygon>
-              <line x1="12" y1="22" x2="12" y2="15.5"></line>
-              <polyline points="22 8.5 12 15.5 2 8.5"></polyline>
-              <polyline points="2 15.5 12 8.5 22 15.5"></polyline>
-              <line x1="12" y1="2" x2="12" y2="8.5"></line>
-            </svg>
-          </span>
-          <div class="brand-text">
-            <span class="brand-title">ServicePilot</span>
-            <span class="brand-subtitle">Kanıttan uzmanlığa</span>
-          </div>
-        </a>
-        <button type="button" class="icon-btn mobile-only" id="sidebar-close" aria-label="Menüyü kapat">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
-        </button>
+  <main id="top">
+    <noscript><p class="no-script">JavaScript kapalı: aşağıda statik senaryo özetini okuyabilirsiniz. Etkileşimli karar döngüsü için JavaScript gerekir.</p></noscript>
+    <section class="hero" aria-labelledby="hero-title">
+      <div class="hero-copy">
+        <h1 id="hero-title">Her kanıt,<br>doğru adıma.</h1>
+        <p>Servis vakası eksik başlayabilir.<br>Sonraki adım belirsiz kalmasın.</p>
+        <a href="#case-start" class="start-link"><span class="down-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4v16m-6-6 6 6 6-6"/></svg></span>Bir vakayı birlikte ilerletelim</a>
       </div>
+      <figure class="hero-vehicle">
+        <img src="assets/service-truck.webp" width="1536" height="1024" alt="Koyu bir servis ortamında markasız ticari kamyon; temsili ürün görseli" fetchpriority="high">
+        <figcaption>Temsili araç görseli</figcaption>
+      </figure>
+      <div class="vehicle-marker" aria-hidden="true"><span></span>Servisten bir sinyal var.</div>
+      <div class="hero-foot"><span>Ticari araç servisleri için aktif kanıt orkestrasyonu</span><span>Kaydır. Vakayı ilerlet.<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4v16m-6-6 6 6 6-6"/></svg></span></div>
+    </section>
 
-      <nav class="sidebar-nav" aria-label="Birincil menü">
-        <a href="#overview" class="nav-item" data-view="overview">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-            <rect x="3" y="3" width="7" height="9" rx="1.5"></rect>
-            <rect x="14" y="3" width="7" height="5" rx="1.5"></rect>
-            <rect x="14" y="12" width="7" height="9" rx="1.5"></rect>
-            <rect x="3" y="16" width="7" height="5" rx="1.5"></rect>
-          </svg>
-          <span>Genel Bakış</span>
-        </a>
-        <a href="#cases" class="nav-item" data-view="cases">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
-            <polyline points="14 2 14 8 20 8"></polyline>
-            <line x1="16" y1="13" x2="8" y2="13"></line>
-            <line x1="16" y1="17" x2="8" y2="17"></line>
-            <line x1="10" y1="9" x2="8" y2="9"></line>
-          </svg>
-          <span>Vakalar</span>
-          <span class="nav-badge" id="nav-cases-count">0</span>
-        </a>
-        <a href="#new" class="nav-item" data-view="new">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-            <circle cx="12" cy="12" r="10"></circle>
-            <line x1="12" y1="8" x2="12" y2="16"></line>
-            <line x1="8" y1="12" x2="16" y2="12"></line>
-          </svg>
-          <span>Yeni Vaka</span>
-        </a>
-        <a href="#review" class="nav-item" data-view="review">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
-            <path d="m9 12 2 2 4-4"></path>
-          </svg>
-          <span>Uzman İncelemesi</span>
-          <span class="nav-badge warning" id="nav-review-count">0</span>
-        </a>
-      </nav>
-
-      <div class="sidebar-footer">
-        <div class="workspace-card">
-          <div class="workspace-meta">
-            <span class="workspace-avatar" aria-hidden="true">SSH</span>
-            <div class="workspace-info">
-              <strong>Satış Sonrası Teknik Destek</strong>
-              <span>Merkez Triyaj &amp; Kanıt Masası</span>
+    <section id="story" class="story" aria-label="Bir servis vakasının karar yolculuğu">
+      <div class="story-visual">
+        <div class="story-toolbar"><span class="case-ref">SP / 001</span><span class="fixture-label"><span></span>Sentetik vaka · Gerçek RAEP</span></div>
+        <nav class="chapter-nav" aria-label="Vakanın adımları">
+          <a href="#case-start" aria-current="step"><span>01</span>Vaka</a>
+          <a href="#signals"><span>02</span>Sinyal</a>
+          <a href="#evidence"><span>03</span>Kanıt</a>
+          <a href="#measure"><span>04</span>Sonuç</a>
+          <a href="#handoff"><span>05</span>Devir</a>
+          <a href="#safety"><span>06</span>Risk</a>
+        </nav>
+        <div class="scene-deck">
+          <section class="scene scene-intake" id="case-start" data-scene="0" aria-label="Servisten gelen vaka">
+            <h2 class="reading-title">Bir vaka. Birçok ihtimal.</h2>
+            <div class="source-note"><div class="paper-heading"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 3h8l4 4v14H5V3h2Zm8 0v5h4M8 12h8m-8 4h6"/></svg>Teknisyen notu</div><p>“ABS, şanzıman ve motor uyarıları aynı anda yandı. Sonra söndü.”</p><span>Tek bir belirti. Birden fazla uzmanlık.</span></div>
+            <div class="dtc-source"><span>Arıza kodları</span><strong>U0100 <span>/</span> U0121</strong><small>Kontrol üniteleriyle iletişim kesintisi</small></div>
+            <div class="history-source"><span>Servis geçmişi</span><strong>Gösterge paneli değişmiş.</strong><small>Bir ay önce</small></div>
+            <svg class="intake-lines" viewBox="0 0 640 500" aria-hidden="true"><path d="M160 225V280Q160 300 190 300H320M490 245V280Q490 300 460 300H320M320 300V370"/><circle cx="320" cy="370" r="5"/></svg>
+            <div class="case-node"><span class="status-dot"></span>Vaka oluşturuldu<span>Kanıtlar henüz yeterli değil</span></div>
+          </section>
+          <section class="scene scene-signals" id="signals" data-scene="1" aria-label="Jev biçimindeki sentetik olasılıklar">
+            <h2 class="reading-title">Önce sinyali anlamlandır.</h2>
+            <div class="sensor-heading"><span class="sensor-symbol" aria-hidden="true"><i></i><i></i><i></i></span><strong>Jev</strong><span>Anlamsal sensör</span></div>
+            <p class="scene-caption">Not aynı. Olasılıklar artık görünür.</p>
+            <div class="signal-rows">
+              <div><span>ECU / CAN haberleşme</span><strong data-initial-prob>68%</strong><div class="signal-track"><i style="--value:.68"></i></div></div>
+              <div><span>Düşük voltaj elektrik</span><strong>22%</strong><div class="signal-track"><i style="--value:.22"></i></div></div>
+              <div><span>Fren sistemleri</span><strong>6%</strong><div class="signal-track"><i style="--value:.06"></i></div></div>
             </div>
-          </div>
-          <div class="workspace-actions">
-            <button type="button" class="btn-subtle btn-xs" id="open-policy-btn" title="RAEP Politika ve Replay Değerlendirmesi">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><line x1="4" y1="21" x2="4" y2="14"></line><line x1="4" y1="10" x2="4" y2="3"></line><line x1="12" y1="21" x2="12" y2="12"></line><line x1="12" y1="8" x2="12" y2="3"></line><line x1="20" y1="21" x2="20" y2="16"></line><line x1="20" y1="12" x2="20" y2="3"></line><line x1="1" y1="14" x2="7" y2="14"></line><line x1="9" y1="8" x2="15" y2="8"></line><line x1="17" y1="16" x2="23" y2="16"></line></svg>
-              <span>RAEP ve replay</span>
-            </button>
-            <button type="button" class="btn-subtle btn-xs" id="reset-demo-btn" title="Temsili demo vakalarını başlangıç durumuna döndür">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path><path d="M3 3v5h5"></path></svg>
-              <span>Demo Verisini Sıfırla</span>
-            </button>
-          </div>
+            <div class="sufficiency"><span>Kanıt yeterliliği</span><strong data-initial-suff>34%</strong><span>Yönlendirme için erken.</span></div>
+            <p class="scene-fine">Sabit demo sinyalleri. Canlı Jev çağrısı yapılmıyor.<br>Olasılık, doğruluk oranı değildir.</p>
+          </section>
+          <section class="scene scene-evidence" id="evidence" data-scene="2" aria-label="RAEP kanıt seçimi">
+            <h2 class="reading-title">Her şeyi değil, doğru şeyi iste.</h2>
+            <div class="policy-heading"><strong>RAEP</strong><span>Risk-Aware Evidence Policy</span></div>
+            <p class="scene-caption">Daha çok veri değil.<br>Kararı değiştiren kanıt.</p>
+            <div class="candidate-head"><span>Aday kanıt</span><span>Net fayda</span></div>
+            <ol class="candidate-list" id="candidate-list">
+              <li><span>CAN hattı direnç ölçümü</span><strong>Seçilen kanıt</strong></li>
+            </ol>
+            <div class="request-stamp"><span class="status-dot"></span><span>Sıradaki istek<strong id="evidence-request">CAN hattı direnç ölçümü</strong></span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14m-6-6 6 6-6 6"/></svg></div>
+            <p class="scene-fine">Risk azalması − ağırlıklı kanıt maliyeti.<br>Maliyet ve etki katsayıları MVP varsayımlarıdır.</p>
+          </section>
+          <section class="scene scene-measure" id="measure" data-scene="3" aria-label="Yeni kanıt ve yeniden değerlendirme">
+            <h2 class="reading-title">Yeni kanıt. Daha net yön.</h2>
+            <div class="measurement-title"><span class="status-dot"></span>İstenen kanıt geldi.</div>
+            <div class="measurement"><strong>120<span>Ω</span></strong><span>Senaryodaki CAN hattı ölçümü</span></div>
+            <svg class="circuit" viewBox="0 0 540 125" aria-label="Temsili CAN hattında eksik sonlandırma"><path class="circuit-base" d="M25 30H515M25 95H515M70 30V50l-8 5 16 8-16 8 8 5V95M470 30V48M470 80V95"/><path class="circuit-break" d="m455 55 30 20m0-20-30 20"/><circle cx="25" cy="30" r="4"/><circle cx="515" cy="30" r="4"/></svg>
+            <div class="comparison"><div><span>Önce / CAN olasılığı</span><strong data-before>68%</strong></div><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12h16m-6-6 6 6-6 6"/></svg><div><span>Yeni kanıtla</span><strong data-after>95%</strong></div></div>
+            <p class="scene-fine">Sentetik sonuç; saha ölçüm talimatı veya arıza teşhisi değil.</p>
+          </section>
+          <section class="scene scene-handoff" id="handoff" data-scene="4" aria-label="Uzman ekibe hazırlanmış vaka">
+            <h2 class="reading-title">Doğru uzmana. Bağlamıyla.</h2>
+            <div class="handoff-symbol" aria-hidden="true"><svg viewBox="0 0 80 80"><path d="m22 40 12 12 24-26"/><circle cx="40" cy="40" r="34"/></svg></div>
+            <p class="handoff-label">Yönlendirme hazır</p>
+            <h3 id="route-target">ECU / CAN<br>Haberleşme</h3>
+            <div class="handoff-packet"><span>Uzman ekibin önünde</span><div><span>Teknisyen notu</span><span>DTC kodları</span><span>Servis geçmişi</span><span>Yeni ölçüm</span><span>Karar gerekçesi</span></div></div>
+            <div class="handoff-end"><span class="status-dot"></span>Hazırlanmış vaka. Açıklanabilir karar.</div>
+            <p class="scene-fine">Bu anlatı gerçek ekibe vaka göndermez. Son karar ve onarım uzmanındır.</p>
+          </section>
+          <section class="scene scene-safety" id="safety" data-scene="5" aria-label="Güvenlik kapısını deneyin">
+            <h2 class="reading-title">Risk varsa, insan devrede.</h2>
+            <div class="safety-symbol" aria-hidden="true"><svg viewBox="0 0 80 80"><path d="M40 6 67 17v22c0 18-27 34-27 34S13 57 13 39V17L40 6Z"/><path d="M40 25v18m0 8v3"/></svg></div>
+            <h3 id="safety-title">Aynı vaka.<br>Yeni bir risk.</h3>
+            <p id="safety-explanation">İlk notta yanık kokusu olsaydı ne değişirdi?</p>
+            <button class="risk-toggle" id="risk-toggle" type="button" disabled aria-pressed="false"><span class="toggle-track" aria-hidden="true"><i></i></span><span>Nota “yanık kokusu” ekle</span></button>
+            <div id="safety-result" class="safety-result" role="status" aria-live="polite">Güvenlik kapısını denemek için notu değiştir.</div>
+            <p class="scene-fine">Bu alternatif ilk nottan yeniden başlar.<br>Risk varsa Jev beklenmez, ek saha testi istenmez.</p>
+          </section>
         </div>
-      </div>
-    </aside>
-
-    <!-- Main Column -->
-    <div class="app-main">
-      <!-- Top Bar -->
-      <header class="topbar">
-        <div class="topbar-left">
-          <button type="button" class="icon-btn mobile-only" id="sidebar-open" aria-label="Menüyü aç" aria-expanded="false" aria-controls="sidebar">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
-          </button>
-          <nav class="breadcrumb" id="breadcrumb" aria-label="Sayfa konumu">
-            <span class="breadcrumb-current">Genel Bakış</span>
-          </nav>
-        </div>
-
-        <div class="topbar-right">
-          <div class="global-search" role="search">
-            <svg class="search-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
-              <circle cx="11" cy="11" r="8"></circle>
-              <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-            </svg>
-            <input type="search" id="global-search-input" placeholder="Vaka ID, model, VIN veya DTC ara…" aria-label="Vakalarda ara" autocomplete="off">
-            <kbd class="search-kbd" aria-hidden="true">/</kbd>
-          </div>
-
-          <div class="env-indicator" id="env-indicator" title="Çalışma modu ve veri kaynağı durumu">
-            <span class="env-dot" id="env-dot" aria-hidden="true"></span>
-            <span id="env-label">Demo Ortamı</span>
-          </div>
-        </div>
-      </header>
-
-      <!-- Global Recoverable Error Banner -->
-      <div class="api-error-banner" id="api-error-banner" role="alert" hidden>
-        <span id="api-error-text">Sunucu bağlantısında geçici bir hata oluştu. Girilen verileriniz korundu.</span>
-        <button type="button" class="btn btn-subtle btn-xs" id="api-error-dismiss">Kapat</button>
+        <div class="story-progress" aria-hidden="true"><i></i></div>
+        <p class="story-disclaimer">Anlatıdaki olasılıklar sentetiktir. Kararlar mevcut RAEP motorunda hesaplanır.</p>
       </div>
 
-      <!-- Workspace Panels -->
-      <main id="main" class="workspace-content" tabindex="-1">
-        <!-- SCREEN A: Genel Bakış -->
-        <section data-panel="overview" class="screen-panel" id="panel-overview">
-          <div class="overview-hero">
-            <div class="overview-hero-text">
-              <h1>Önce doğru kanıt.<br>Sonra doğru uzman.</h1>
-              <p>Eksik servis vakasını hazır bir uzman devrine dönüştürün. Teşhis değil, sıradaki doğru adım.</p>
-            </div>
-            <div class="overview-hero-actions">
-              <button type="button" class="btn btn-primary" data-start-demo="can_comm">Kanıt döngüsünü dene</button>
-              <a href="#new" class="btn btn-secondary">Kendi vakanı aç</a>
-            </div>
-          </div>
-
-          <div class="method-strip" aria-label="ServicePilot nasıl çalışır">
-            <section class="method-step"><h2>Jev okur</h2><p>Servis notundan uzmanlık, yeterlilik ve risk olasılıklarını çıkarır.</p><small>Choice · Noul · Score</small></section>
-            <section class="method-step"><h2>RAEP hesaplar</h2><p>Risk ile kanıt maliyetini tartar. En değerli sonraki adımı seçer.</p><small>Risk-Aware Evidence Policy</small></section>
-            <section class="method-step"><h2>Vaka ilerler</h2><p>Kanıt istenir, ekibe yönlendirilir veya insan uzmana aktarılır.</p><small>Karar ve insan onayı kayıt altında</small></section>
-          </div>
-          <div class="demo-shortcuts"><span>Diğer demo akışları:</span>
-            <button type="button" data-start-demo="hv_propulsion">Yönlendirme akışı</button>
-            <button type="button" data-start-demo="critical_fire">Güvenlik riski</button>
-            <span>Sentetik vakalar · Gerçek saha verisi değil</span>
-          </div>
-
-          <div class="kpi-grid" id="overview-kpis" aria-live="polite"></div>
-
-          <div class="overview-columns">
-            <div class="overview-main-col">
-              <div class="section-header">
-                <div>
-                  <h2>Öncelikli Vakalar</h2>
-
-                </div>
-                <a href="#cases" class="btn btn-secondary btn-sm">Tüm Vakaları Gör</a>
-              </div>
-              <div id="priority-cases-list" class="priority-cases-list"></div>
-            </div>
-
-            <aside class="overview-side-col" aria-label="Son aktiviteler ve sistem durumu">
-              <div class="section-header">
-                <div>
-                  <h2>Son Aktiviteler</h2>
-
-                </div>
-              </div>
-              <div class="card activity-card">
-                <ol class="activity-feed" id="recent-activity-list"></ol>
-              </div>
-
-              <div class="card system-posture-card" id="system-posture-card"></div>
-            </aside>
-          </div>
-        </section>
-
-        <!-- SCREEN B: Vakalar -->
-        <section data-panel="cases" class="screen-panel" id="panel-cases" hidden>
-          <div class="page-header">
-            <div>
-              <h1>Vakalar</h1>
-              <p class="page-subtitle">Kanıtı tamamlayın, yönlendirmeyi teyit edin.</p>
-            </div>
-            <div class="page-header-actions">
-              <a href="#new" class="btn btn-primary">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
-                <span>Yeni Vaka</span>
-              </a>
-            </div>
-          </div>
-
-          <div class="cases-toolbar card">
-            <div class="cases-search-wrap">
-              <svg class="search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
-                <circle cx="11" cy="11" r="8"></circle>
-                <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-              </svg>
-              <input type="search" id="cases-search-input" placeholder="Vaka ID, araç modeli, VIN, DTC kodu veya açıklama ara…" aria-label="Vaka listesini filtrele">
-            </div>
-
-            <div class="status-filters" id="status-filters" role="tablist" aria-label="Vaka durumu filtreleri">
-              <button type="button" role="tab" class="filter-pill active" data-filter="all" aria-selected="true" aria-controls="cases-table-container">Tümü</button>
-              <button type="button" role="tab" class="filter-pill" data-filter="inspecting" aria-selected="false" aria-controls="cases-table-container">İnceleniyor</button>
-              <button type="button" role="tab" class="filter-pill" data-filter="awaiting_evidence" aria-selected="false" aria-controls="cases-table-container">Kanıt Bekleniyor</button>
-              <button type="button" role="tab" class="filter-pill" data-filter="expert_review" aria-selected="false" aria-controls="cases-table-container">Uzman Onayında</button>
-              <button type="button" role="tab" class="filter-pill" data-filter="routed" aria-selected="false" aria-controls="cases-table-container">Yönlendirildi</button>
-            </div>
-          </div>
-
-          <div id="cases-table-container" class="cases-table-container" role="region" aria-live="polite"></div>
-        </section>
-
-        <!-- SCREEN C: Yeni Vaka (3-Step Selectable Wizard) -->
-        <section data-panel="new" class="screen-panel" id="panel-new" hidden>
-          <div class="page-header">
-            <div>
-              <h1>Yeni Vaka</h1>
-              <p class="page-subtitle">Araç ve şikayeti girin. Sıradaki adımı ServicePilot belirlesin.</p>
-            </div>
-            <div class="page-header-actions">
-              <a href="#cases" class="btn btn-secondary btn-sm">Vakalara Dön</a>
-            </div>
-          </div>
-
-          <!-- Demo scenario quick loader -->
-          <div class="card scenario-bar">
-            <div class="scenario-bar-head">
-              <div>
-                <strong>Hazır bir vakayla başlayın</strong>
-              </div>
-              <button type="button" class="btn btn-subtle btn-sm" id="toggle-scenarios-btn" aria-expanded="false" aria-controls="all-scenarios-drawer">
-                Tüm senaryolar
-              </button>
-            </div>
-            <div class="scenario-pills" id="quick-scenarios"></div>
-            <div class="scenario-grid-drawer" id="all-scenarios-drawer" hidden></div>
-
-            <div class="active-scenario-bar" id="active-scenario-bar" hidden>
-              <div>
-                <span class="badge badge-accent">Seçili Senaryo</span>
-                <strong id="active-scenario-title">—</strong>
-              </div>
-              <button type="button" class="btn btn-subtle btn-xs" id="clear-scenario-btn">Senaryo Seçimini Kaldır</button>
-            </div>
-          </div>
-
-          <div class="draft-banner" id="draft-banner" hidden>
-            <div class="draft-banner-text">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline></svg>
-              <span id="draft-banner-msg">Kaydedilmiş vaka taslağı yüklendi.</span>
-            </div>
-            <button type="button" class="btn btn-subtle btn-xs" id="clear-draft-btn">Taslağı Temizle</button>
-          </div>
-
-          <!-- Clickable 3-Step Stepper -->
-          <nav class="wizard-stepper" id="wizard-stepper" aria-label="Yeni vaka oluşturma adımları">
-            <button type="button" class="step-tab active" data-step-target="1" id="step-btn-1" aria-current="step">
-              <span class="step-num">1</span>
-              <span class="step-label">
-                <strong>Araç</strong>
-                <small>Model, KM ve lokasyon</small>
-              </span>
-            </button>
-            <button type="button" class="step-tab" data-step-target="2" id="step-btn-2">
-              <span class="step-num">2</span>
-              <span class="step-label">
-                <strong>Şikayet</strong>
-                <small>Arıza notu ve DTC kodları</small>
-              </span>
-            </button>
-            <button type="button" class="step-tab" data-step-target="3" id="step-btn-3">
-              <span class="step-num">3</span>
-              <span class="step-label">
-                <strong>Kanıt ve Kontrol</strong>
-                <small>Fotoğraf, ölçüm ve onay</small>
-              </span>
-            </button>
-          </nav>
-
-          <form id="case-form" class="new-case-form" novalidate>
-            <!-- STEP 1: Araç Bilgileri -->
-            <section class="card form-section" id="form-step-1" aria-labelledby="sec-vehicle-h">
-              <div class="form-section-head">
-                <span class="section-step" aria-hidden="true">1</span>
-                <div>
-                  <h2 id="sec-vehicle-h" tabindex="-1">Araç Bilgileri</h2>
-                  <p>Model ve kilometre yeterli; diğer bilgileri biliyorsanız ekleyin.</p>
-                </div>
-              </div>
-
-              <div class="form-grid-2">
-                <div class="field">
-                  <label for="family">Araç modeli <span class="req-tag">Zorunlu</span></label>
-                  <input id="family" name="family" required minlength="2" maxlength="80" list="families" placeholder="Örn: Isuzu Citiport 12 veya Isuzu NPR 10" autocomplete="off" aria-describedby="err-family">
-                  <datalist id="families">
-                    <option value="Isuzu NPR 10"></option>
-                    <option value="Isuzu N-Wide"></option>
-                    <option value="Isuzu Novo"></option>
-                    <option value="Isuzu Novo Lux"></option>
-                    <option value="Isuzu Citiport 12"></option>
-                    <option value="Isuzu Kendo"></option>
-                    <option value="Isuzu Novociti Volt"></option>
-                    <option value="Isuzu Citivolt 12"></option>
-                  </datalist>
-                  <span class="field-hint">Elektrikli modellerde tahrik sistemi otomatik seçilir.</span>
-                  <span class="field-error" id="err-family" role="alert"></span>
-                </div>
-
-                <div class="field">
-                  <label for="vin">VIN / Araç kimlik numarası <span class="opt-tag">İsteğe bağlı</span></label>
-                  <input id="vin" name="vin" class="mono" maxlength="24" placeholder="Örn: NLNC12000R0041892" autocapitalize="characters" spellcheck="false" aria-describedby="err-vin">
-                  <span class="field-hint">Şasi numarası veya filo araç kodu (en fazla 24 karakter).</span>
-                  <span class="field-error" id="err-vin" role="alert"></span>
-                </div>
-              </div>
-
-              <div class="form-grid-3">
-                <div class="field">
-                  <label for="km">Kilometre <span class="req-tag">Zorunlu</span></label>
-                  <input id="km" name="km" type="number" min="0" max="5000000" step="1" required inputmode="numeric" placeholder="Örn: 184000" value="145000" aria-describedby="err-km">
-                  <span class="field-hint">0 ile 5.000.000 km arası tam sayı.</span>
-                  <span class="field-error" id="err-km" role="alert"></span>
-                </div>
-
-                <div class="field">
-                  <span class="label" id="fuel-label">Yakıt / Tahrik sistemi <span class="req-tag">Zorunlu</span></span>
-                  <div class="segmented-radios" role="radiogroup" aria-labelledby="fuel-label">
-                    <label class="radio-card">
-                      <input type="radio" name="fuel" value="diesel" checked>
-                      <span>Dizel (ICE)</span>
-                    </label>
-                    <label class="radio-card">
-                      <input type="radio" name="fuel" value="electric">
-                      <span>Elektrik (HV)</span>
-                    </label>
-                  </div>
-                </div>
-
-                <div class="field">
-                  <label for="location">Servis / Lokasyon <span class="opt-tag">İsteğe bağlı</span></label>
-                  <input id="location" name="location" maxlength="120" placeholder="Örn: Bursa Yetkili Servis">
-                </div>
-              </div>
-
-              <div class="form-footer">
-                <button type="button" class="btn btn-secondary" data-save-draft>Taslağı kaydet</button>
-                <button type="button" class="btn btn-primary" data-next-step="2">Şikayete geç</button>
-              </div>
-            </section>
-
-            <!-- STEP 2: Arıza Açıklaması -->
-            <section class="card form-section" id="form-step-2" aria-labelledby="sec-problem-h" hidden>
-              <div class="form-section-head">
-                <span class="section-step" aria-hidden="true">2</span>
-                <div>
-                  <h2 id="sec-problem-h" tabindex="-1">Şikayet</h2>
-                  <p>Ne oldu, hangi koşulda? Mevcut arıza kodlarını da ekleyin.</p>
-                </div>
-              </div>
-
-              <div class="field">
-                <label for="note">Teknisyen arıza açıklaması <span class="req-tag">Zorunlu (5–4000 karakter)</span></label>
-                <textarea id="note" name="note" required minlength="5" maxlength="4000" rows="4" placeholder="Örn: Göstergede seyir halinde aynı anda ABS ve şanzıman uyarıları yandı, birkaç saniye sonra söndü. Araç normal sürülüyor…" aria-describedby="err-note"></textarea>
-                <span class="field-hint">Şikayetin hangi koşulda (ilk marş, yokuş, şarj, seyir) oluştuğunu belirtin.</span>
-                <span class="field-error" id="err-note" role="alert"></span>
-              </div>
-
-              <div class="form-grid-2">
-                <div class="field">
-                  <label for="dtc-input">DTC arıza kodları <span class="opt-tag">İsteğe bağlı (en fazla 20 kod)</span></label>
-                  <div class="dtc-input-box" id="dtc-box">
-                    <div class="dtc-chips" id="dtc-chips" aria-live="polite"></div>
-                    <div class="dtc-entry-row">
-                      <input id="dtc-input" type="text" class="mono" maxlength="16" placeholder="Kod yazıp Enter'a basın (Örn: U0100)" autocapitalize="characters" spellcheck="false">
-                      <button type="button" class="btn btn-secondary btn-sm" id="add-dtc-btn">+ Ekle</button>
-                    </div>
-                  </div>
-                  <div class="dtc-suggestions">
-                    <span class="field-hint">Hızlı ekle:</span>
-                    <button type="button" class="chip-suggest mono" data-dtc="U0100">U0100</button>
-                    <button type="button" class="chip-suggest mono" data-dtc="U0121">U0121</button>
-                    <button type="button" class="chip-suggest mono" data-dtc="P0562">P0562</button>
-                    <button type="button" class="chip-suggest mono" data-dtc="P0217">P0217</button>
-                    <button type="button" class="chip-suggest mono" data-dtc="P0A78">P0A78</button>
-                  </div>
-                </div>
-
-                <div class="field">
-                  <label for="repairs">İlgili servis geçmişi / Son onarımlar <span class="opt-tag">İsteğe bağlı</span></label>
-                  <textarea id="repairs" name="repairs" maxlength="2000" rows="3" placeholder="Örn: Geçen ay gösterge paneli değişti; 90.000 km bakımı yapıldı."></textarea>
-                  <span class="field-hint">Yakın zamanda değişen parçalar veya tekrarlayan şikayet bilgisi.</span>
-                </div>
-              </div>
-
-              <div class="form-footer">
-                <button type="button" class="btn btn-secondary" data-prev-step="1">Araç bilgilerine dön</button>
-                <button type="button" class="btn btn-secondary" data-save-draft>Taslağı kaydet</button>
-                <button type="button" class="btn btn-primary" data-next-step="3">Son kontrole geç</button>
-              </div>
-            </section>
-
-            <!-- STEP 3: Kanıtlar ve Kontrol Özeti -->
-            <section class="card form-section" id="form-step-3" aria-labelledby="sec-evidence-h" hidden>
-              <div class="form-section-head">
-                <span class="section-step" aria-hidden="true">3</span>
-                <div>
-                  <h2 id="sec-evidence-h" tabindex="-1">Kanıt ve son kontrol</h2>
-                  <p>Varsa ilk ölçümleri ekleyin. Özeti kontrol edip kararı başlatın.</p>
-                </div>
-              </div>
-
-              <div class="form-grid-2">
-                <div class="field">
-                  <label for="photo-input">Referans fotoğraflar <span class="opt-tag">İsteğe bağlı (en fazla 4 görsel, ≤500 KB)</span></label>
-                  <div class="dropzone" id="photo-dropzone" tabindex="0" role="button" aria-label="Fotoğraf yüklemek için tıklayın veya dosyaları sürükleyin">
-                    <input type="file" id="photo-input" accept="image/png,image/jpeg,image/webp,image/svg+xml" multiple hidden>
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true">
-                      <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
-                      <circle cx="8.5" cy="8.5" r="1.5"></circle>
-                      <polyline points="21 15 16 10 5 21"></polyline>
-                    </svg>
-                    <div class="dropzone-text">
-                      <strong>Fotoğrafları buraya sürükleyin veya dosya seçin</strong>
-                      <span>PNG, JPG, WEBP veya SVG · Uzman referansı olarak kaydedilir (otomatik görüntü analizi yapılmaz).</span>
-                    </div>
-                  </div>
-                  <span class="field-error" id="err-photo" role="alert"></span>
-                  <div class="attachment-previews" id="form-attachments-list"></div>
-                </div>
-
-                <div class="field">
-                  <label for="initial_measurements">İlk ölçümler ve gözlemler <span class="opt-tag">İsteğe bağlı</span></label>
-                  <textarea id="initial_measurements" name="initial_measurements" maxlength="2000" rows="4" placeholder="Örn: Kontak kapalı akü voltajı 24.6V ölçüldü. Motor yağ ve antifriz seviyesi normal."></textarea>
-                  <span class="field-hint">Halihazırda yapılmış olan ölçümleri yazarsanız sistem aynı kanıtı tekrar istemez.</span>
-                </div>
-              </div>
-
-              <!-- Compact Pre-submission Summary -->
-              <div class="review-summary-box" id="form-review-summary" aria-live="polite"></div>
-
-              <div class="form-error-banner" id="form-error" role="alert" hidden></div>
-
-              <div class="form-footer">
-                <button type="button" class="btn btn-secondary" data-prev-step="2">Şikayete dön</button>
-                <button type="button" class="btn btn-secondary" id="save-draft-btn" data-save-draft>Taslağı kaydet</button>
-                <button type="submit" class="btn btn-primary btn-lg" id="submit-case-btn">
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>
-                  <span>Sıradaki adımı belirle</span>
-                </button>
-              </div>
-            </section>
-          </form>
-        </section>
-
-        <!-- SCREEN D: Vaka Detayı -->
-        <section data-panel="detail" class="screen-panel" id="panel-detail" hidden>
-          <div id="case-detail-view"></div>
-        </section>
-
-        <!-- SCREEN E: Uzman İncelemesi (plus Queues & Policy/Replay tabs) -->
-        <section data-panel="review" class="screen-panel" id="panel-review" hidden>
-          <div class="page-header">
-            <div>
-              <h1>Uzman İncelemesi</h1>
-              <p class="page-subtitle">Bekleyen kararları inceleyin ve hedef ekibi teyit edin.</p>
-            </div>
-            <div class="view-tabs" role="tablist" aria-label="Uzman inceleme ve yönetim görünümleri">
-              <button type="button" role="tab" class="tab-btn active" id="tab-btn-queue" data-review-tab="queue" aria-selected="true" aria-controls="review-tab-queue">
-                İnceleme Kuyruğu
-                <span class="tab-count" id="tab-review-count">0</span>
-              </button>
-              <button type="button" role="tab" class="tab-btn" id="tab-btn-teams" data-review-tab="teams" aria-selected="false" aria-controls="review-tab-teams">
-                Ekip kuyrukları
-              </button>
-              <button type="button" role="tab" class="tab-btn" id="tab-btn-policy" data-review-tab="policy" aria-selected="false" aria-controls="review-tab-policy">
-                RAEP ve replay
-              </button>
-            </div>
-          </div>
-
-          <!-- Subview 1: Expert Review Queue (Screen E) -->
-          <div id="review-tab-queue" class="review-subpanel" role="tabpanel" aria-labelledby="tab-btn-queue">
-            <div id="expert-review-list"></div>
-          </div>
-
-          <!-- Subview 2: Specialist Team Queues (FR-11) -->
-          <div id="review-tab-teams" class="review-subpanel" role="tabpanel" aria-labelledby="tab-btn-teams" hidden>
-            <div class="callout-bar">
-              <span>Önerilen ve onaylanan atamalar hedef ekibe göre gruplanır. Yeterli olasılık yoksa RAEP üst uzmanlığı seçebilir.</span>
-            </div>
-            <div class="queues-grid" id="queues-grid"></div>
-          </div>
-
-          <!-- Subview 3: RAEP Policy & Replay (FR-10, FR-13) -->
-          <div id="review-tab-policy" class="review-subpanel" role="tabpanel" aria-labelledby="tab-btn-policy" hidden>
-            <div class="policy-replay-grid">
-              <section class="card">
-                <div class="section-header">
-                  <div>
-                    <h2>RAEP Politika Ayarları</h2>
-                    <p class="section-subtitle">Eşik ve maliyet ağırlıkları kararı değiştirir; saklı Jev sinyallerini bozmaz.</p>
-                  </div>
-                </div>
-                <form id="policy-form" class="policy-form"></form>
-              </section>
-
-              <section class="card">
-                <div class="section-header">
-                  <div>
-                    <h2>Karar Matematiği ve Kanıt Kataloğu</h2>
-                    <p class="section-subtitle">Risk-duyarlı aktif kanıt politikası (RAEP) formülü ve varsayılan maliyet parametreleri</p>
-                  </div>
-                </div>
-                <pre class="formula-box mono">err(s)   = 1 − max p_leaf
-L(s)     = 1 + w_crit · p_crit
-err'(e)  = ρ_e · err_inf(e) + (1 − ρ_e) · err(s)
-C(e)     = α·T_e + β·E_e + γ·S_e
-U(e)     = L(s) · (err(s) − err'(e)) − λ · C(e)</pre>
-                <p class="field-hint" style="margin: 8px 0 14px;">Kanıt maliyetleri (T dakika, E efor 1–5, S güvenlik 0–5) ve güvenilirlikler (ρ) uzman <strong>varsayımıdır</strong>; PoC aşamasında gerçek vaka verisiyle kalibre edilecektir.</p>
-                <div id="evidence-catalog" class="table-scroll"></div>
-              </section>
-            </div>
-
-            <section class="card" style="margin-top: 16px;">
-              <div class="section-header">
-                <div>
-                  <h2>Offline Replay Değerlendirmesi</h2>
-                  <p class="section-subtitle">13 sentetik senaryoyu güncel RAEP politika ayarlarıyla çalıştırarak Baseline B (Sabit Checklist) ve Baseline C (Jev Tek-Shot) ile karşılaştırın.</p>
-                </div>
-                <button type="button" class="btn btn-primary" id="run-replay">Simülasyonu Çalıştır</button>
-              </div>
-              <div class="callout-bar warning-bar">
-                <strong>Çevrimdışı / Sentetik Değerlendirme:</strong> Senaryolar demo için yazılmış sentetik vakalardır; beklenen etiketler yalnız doğruluk/recall puanlamasında kullanılır, karar motoruna girdi olarak verilmez.
-              </div>
-              <div id="replay-out"></div>
-            </section>
-          </div>
-        </section>
-      </main>
-    </div>
-  </div>
-
-  <!-- MODAL 1: Kanıt Ekle (Evidence Submission Dialog) -->
-  <dialog class="modal" id="evidence-modal" aria-labelledby="ev-modal-title">
-    <form class="modal-box" id="evidence-modal-form" method="dialog" novalidate>
-      <div class="modal-head">
-        <div>
-          <span class="badge badge-accent" id="ev-modal-badge">Kanıt Girişi</span>
-          <h2 id="ev-modal-title">Kanıt Ekle</h2>
-        </div>
-        <button type="button" class="icon-btn" data-close-modal="evidence-modal" aria-label="Kapat">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
-        </button>
+      <div class="story-chapters">
+        <section class="chapter" data-chapter-id="case-start" data-step="0"><span class="step-count">01 / 06</span><h2>Bir vaka.<br>Birçok ihtimal.</h2><p>Servisten bir not geliyor. Sorun motor mu, fren mi, haberleşme mi? Henüz ekibi seçmiyoruz.</p><span class="chapter-bottom">İlerlemek için kaydır<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4v16m-6-6 6 6 6-6"/></svg></span></section>
+        <section class="chapter" data-chapter-id="signals" data-step="1"><span class="step-count">02 / 06</span><h2>Önce sinyali<br>anlamlandır.</h2><p>Jev uzmanlık, yeterlilik ve risk olasılıklarını üretir. Nihai kararı vermez.</p><span class="chapter-note">Sinyal ayrı.<br>Karar ayrı.</span></section>
+        <section class="chapter" data-chapter-id="evidence" data-step="2"><span class="step-count">03 / 06</span><h2>Her şeyi değil,<br>doğru şeyi iste.</h2><p>RAEP, aday kanıtların beklenen risk azalmasını maliyetleriyle tartar. Bu vakada sıradaki adım: CAN hattı ölçümü.</p><span class="chapter-note">Aktif kanıt toplama.<br>Sabit kontrol listesi değil.</span></section>
+        <section class="chapter" data-chapter-id="measure" data-step="3"><span class="step-count">04 / 06</span><h2>Yeni kanıt.<br>Daha net yön.</h2><p>Ölçüm vakaya eklenir. Olasılıklar yeniden değerlendirilir. RAEP artık yeterli kanıtla ilerleyebilir.</p><span class="chapter-note">Kanıt döngüsü,<br>karar değişene kadar.</span></section>
+        <section class="chapter" data-chapter-id="handoff" data-step="4"><span class="step-count">05 / 06</span><h2>Doğru uzmana.<br>Bağlamıyla.</h2><p>Not, kodlar, geçmiş ve ölçüm aynı vakada. Uzman yalnız bir şikayet değil, hazırlanmış bir karar izi alır.</p><span class="chapter-note">Teşhis koymuyoruz.<br>Sonraki adımı netleştiriyoruz.</span></section>
+        <section class="chapter" data-chapter-id="safety" data-step="5"><span class="step-count">06 / 06</span><h2>Risk varsa,<br>insan devrede.</h2><p>Hız, güvenliğin önüne geçmez. Aynı vakanın ilk notuna bir güvenlik sinyali ekleyerek farkı gör.</p><span class="chapter-note">Güvenlik kapısı,<br>olasılıklardan önce.</span></section>
       </div>
-      <div class="modal-body">
-        <div class="callout-bar" id="ev-modal-requested-banner" style="margin-bottom:0"></div>
+    </section>
 
-        <div class="field">
-          <label for="ev-modal-select">Uygulanabilir kanıt / kontrol türü</label>
-          <select id="ev-modal-select" name="evidence_id"></select>
-          <span class="field-hint" id="ev-modal-meta"></span>
-        </div>
-
-        <div class="field">
-          <div class="field-label-row">
-            <label for="ev-modal-result">Ölçüm / Gözlem sonucu <span class="req-tag">Zorunlu (2–2000 karakter)</span></label>
-            <button type="button" class="btn btn-subtle btn-xs" id="ev-modal-fill-btn" hidden>Senaryo Cevabını Doldur</button>
-          </div>
-          <textarea id="ev-modal-result" name="result" rows="3" required minlength="2" maxlength="2000" placeholder="Yapılan ölçüm değerini veya görsel inceleme bulgusunu yazın…" aria-describedby="ev-modal-error"></textarea>
-          <span class="field-hint" id="ev-modal-scenario-hint" hidden></span>
-          <span class="field-error" id="ev-modal-error" role="alert"></span>
-        </div>
-
-        <div class="field">
-          <label for="ev-modal-photo">Görsel referans ekle <span class="opt-tag">İsteğe bağlı (≤500 KB)</span></label>
-          <div class="compact-upload">
-            <input type="file" id="ev-modal-photo" accept="image/png,image/jpeg,image/webp,image/svg+xml">
-          </div>
-          <div id="ev-modal-photo-preview" class="attachment-previews"></div>
-        </div>
-      </div>
-      <div class="modal-foot">
-        <button type="button" class="btn btn-secondary" data-close-modal="evidence-modal">İptal</button>
-        <button type="submit" class="btn btn-primary" id="ev-modal-submit">Kanıtı Kaydet ve Yeniden Değerlendir</button>
-      </div>
-    </form>
-  </dialog>
-
-  <!-- MODAL 2: Uzman Onayı / Farklı Ekibe Yönlendir (Override Dialog) -->
-  <dialog class="modal" id="override-modal" aria-labelledby="ov-modal-title">
-    <form class="modal-box" id="override-modal-form" method="dialog" novalidate>
-      <div class="modal-head">
-        <div>
-          <span class="badge badge-warning" id="ov-modal-badge">Uzman Kararı</span>
-          <h2 id="ov-modal-title">Uzman Yönlendirme Kararı</h2>
-        </div>
-        <button type="button" class="icon-btn" data-close-modal="override-modal" aria-label="Kapat">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
-        </button>
-      </div>
-      <div class="modal-body">
-        <p class="text-secondary" id="ov-modal-desc" style="margin-top:0"></p>
-        <div class="field">
-          <label for="ov-modal-target">Hedef uzman ekip <span class="req-tag">Zorunlu</span></label>
-          <select id="ov-modal-target" name="target" required aria-describedby="ov-modal-error"></select>
-        </div>
-        <div class="field">
-          <label for="ov-modal-reason">Karar / Değişiklik gerekçesi <span class="req-tag" id="ov-reason-req">Zorunlu</span></label>
-          <textarea id="ov-modal-reason" name="reason" rows="3" maxlength="1000" placeholder="Örn: Sigorta tablası F18 incelendi, düşük voltaj elektrik ekibine devredildi…" aria-describedby="ov-modal-error"></textarea>
-          <span class="field-hint">Bu gerekçe vakanın karar geçmişine (denetim izi) kalıcı olarak kaydedilir.</span>
-          <span class="field-error" id="ov-modal-error" role="alert"></span>
-        </div>
-      </div>
-      <div class="modal-foot">
-        <button type="button" class="btn btn-secondary" data-close-modal="override-modal">İptal</button>
-        <button type="submit" class="btn btn-primary" id="ov-modal-submit">Kararı Kaydet</button>
-      </div>
-    </form>
-  </dialog>
-
-  <!-- MODAL 3: Görsel Önizleme -->
-  <dialog class="modal modal-lg" id="image-modal" aria-labelledby="img-modal-title">
-    <div class="modal-box">
-      <div class="modal-head">
-        <h2 id="img-modal-title">Görsel Kanıt İncelemesi</h2>
-        <button type="button" class="icon-btn" data-close-modal="image-modal" aria-label="Kapat">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
-        </button>
-      </div>
-      <div class="modal-body image-modal-body">
-        <img id="img-modal-src" alt="Vaka görsel kanıtı">
-        <p id="img-modal-caption" class="text-secondary"></p>
-      </div>
-    </div>
-  </dialog>
-
-  <div class="toast" id="toast" role="status" aria-live="polite"></div>
-  <script src="app.js" type="module"></script>
+    <section id="approach" class="approach" aria-labelledby="approach-title">
+      <h2 id="approach-title">Bir tahmin değil.<br>İlerleyen bir karar döngüsü.</h2>
+      <div class="approach-detail"><p>Ar-Ge odağımız: hangi kanıtın, ne zaman, hangi riski azaltacağını seçmek.</p><div class="mechanism"><span>Kanıt</span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12h16m-6-6 6 6-6 6"/></svg><span>Jev sinyalleri</span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12h16m-6-6 6 6-6 6"/></svg><span>RAEP kararı</span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12h16m-6-6 6 6-6 6"/></svg><span>Sonraki adım</span></div><details><summary>Bugün çalışan ne, ürün vizyonu ne?</summary><p>Bugünkü MVP metin/JSON üzerinde kanıt isteme, risk kontrollü yönlendirme ve insan eskalasyonu sunar. Fotoğraf, ses ve çok modlu geçmiş analizi ürün vizyonudur; bu sayfada görsel analiz yapılmaz. Anadolu Isuzu ile PoC hedeflenir; gerçekleşmiş ortaklık veya saha kazanımı iddiası yoktur.</p></details></div>
+    </section>
+    <section class="closing"><p>Eksik bilgiyle başlayan vaka.<br>Bir sonraki adımı belli bir süreç.</p><a href="demo/" class="restart-link">Demoyu dene<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14m-6-6 6 6-6 6"/></svg></a></section>
+  </main>
+  <footer><a class="wordmark" href="#top"><img src="assets/logo.svg" width="32" height="32" alt="">ServicePilot<span class="brand-period">.</span></a><span>Kanıttan uzmanlığa.</span><a href="#case-start">Vakayı baştan keşfet</a></footer>
 </body>
 </html>

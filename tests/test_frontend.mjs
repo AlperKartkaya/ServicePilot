@@ -130,7 +130,7 @@ test('provider unavailable records honest escalation; no fixture fallback', asyn
 
 test('public browser ships no access-code layer or provider credential', () => {
   const js = readFileSync(new URL('../static/app.js', import.meta.url), 'utf8');
-  const html = readFileSync(new URL('../static/index.html', import.meta.url), 'utf8');
+  const html = readFileSync(new URL('../static/demo/index.html', import.meta.url), 'utf8');
   assert.doesNotMatch(js, /JEV_TOKEN_KEY|liveJevToken|Authorization:|sessionStorage/);
   assert.doesNotMatch(html, /jev-access|jev-connect|jev-disconnect/);
 });

@@ -10,7 +10,9 @@ ServicePilot, eksik bir servis vakasında **sıradaki en değerli kanıtı** se�
 
 [GitHub Pages — ServicePilot](https://alperkartkaya.github.io/ServicePilot/)
 
-Bu adres **her ziyaretçi için otomatik canlı Jev** kullanır; giriş veya erişim kodu istemez. Private key yalnız Cloudflare Worker'daki `TYPESAFE_API_KEY` secret'ında kalır. Jev olasılık üretir; RAEP tarayıcıda karar verir. Kayıtlar cihazda saklanır, kullanıcılar arasında paylaşılmaz. İlk temsili kayıtlar ve replay canlı modele dönüşmez. Gerçek müşteri verisi girmeyin.
+Yeni landing kaynakta hazırdır: kaydırmayla ilerleyen altı adımlı sentetik vaka, gerçek RAEP hesapları ve risk alternatifi. Ana sayfa Jev çağırmaz veya vaka saklamaz. Operasyonel MVP `demo/` yolundadır; önceki uygulama hash bağlantıları korunur. [Landing tasarım ve doğrulama rehberi](docs/LANDING.md). Landing: https://alperkartkaya.github.io/ServicePilot/ · [Demoyu dene](https://alperkartkaya.github.io/ServicePilot/demo/).
+
+Operasyonel MVP **her ziyaretçi için otomatik canlı Jev** kullanır; giriş veya erişim kodu istemez. Private key yalnız Cloudflare Worker'daki `TYPESAFE_API_KEY` secret'ında kalır. Jev olasılık üretir; RAEP tarayıcıda karar verir. Kayıtlar cihazda saklanır, kullanıcılar arasında paylaşılmaz. İlk temsili kayıtlar ve replay canlı modele dönüşmez. Gerçek müşteri verisi girmeyin.
 
 Anahtarı değiştirmek için Cloudflare → Workers & Pages → `servicepilot-jev` → Settings → Variables and Secrets: `TYPESAFE_API_KEY`, tür **Secret**, ardından Deploy. Mevcut secret korunur; site kullanıcıları anahtar girmez. Yaklaşık ortak 5/dakika/Cloudflare-konumu sınırı vardır; katı harcama tavanı değildir. Cloudflare ve Jev kullanım kotaları ayrıdır.
 
@@ -22,7 +24,8 @@ Anahtarı değiştirmek için Cloudflare → Workers & Pages → `servicepilot-j
 # .env içinde: TYPESAFE_API_KEY=...
 uv sync
 uv run uvicorn app.main:app --reload
-# http://localhost:8000      UI
+# http://localhost:8000      Landing
+# http://localhost:8000/demo/ Operasyonel MVP
 # http://localhost:8000/docs OpenAPI
 uv run pytest -q             # RAEP birim testleri
 ```
@@ -43,7 +46,7 @@ uv run pytest -q             # RAEP birim testleri
 
 ```bash
 uv run pytest -q                    # Python politika/API; her test geçici DB kullanır
-node --test tests/test_frontend.mjs  # Bağımlılıksız yerel JS politika/yaşam döngüsü
+node --test tests/test_frontend.mjs tests/test_landing.mjs tests/test_worker.mjs # Bağımlılıksız yerel JS politika/yaşam döngüsü
 node --check static/app.js
 ```
 
@@ -61,13 +64,13 @@ uv run --with playwright python tests/browser_smoke.py --api-fixture --url http:
 ```
 Chromium kurulu değilse test ortamında `uv run --with playwright playwright install chromium` gerekir. Browser testi yalnız disposable loopback sunucular içindir; fixture API'deki demo kayıtlarını sıfırlar. Canlı sunucuya karşı çalıştırmayın.
 
-Tasarım kararları: [DESIGN.md](DESIGN.md). XERJ kurulumu, iki referans repo, sorgular ve beş skill: [referans kodlama](docs/REFERENCE_CODING.md). Kontrol kapsamı: [doğrulama kaydı](docs/VALIDATION.md).
+Tasarım kararları: [operasyonel arayüz](DESIGN.md), [landing](docs/landing/DESIGN.md). XERJ kurulumu, iki referans repo, sorgular ve beş skill: [referans kodlama](docs/REFERENCE_CODING.md). Kontrol kapsamı: [doğrulama kaydı](docs/VALIDATION.md).
 
 ## Yapı
 
 ```text
 app/        main.py (API) · raep.py (politika) · jev.py (Jev istemcisi) · catalog.py · scenarios.py · store.py (SQLite)
-static/     index.html · app.js · style.css (build yok)
+static/     index.html · landing.* · demo/index.html · app.html (eski bağlantı) · app.js · style.css · yerel vendor/assets (build yok)
 specs/      PRD · REQUIREMENTS · ARCHITECTURE · API_SPEC · PLAN · DECISIONS
 tests/      Python/JS regresyonları · Chromium smoke · izole API fixture
 ```

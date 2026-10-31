@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 256 256" role="img" aria-labelledby="title description">
+  <title id="title">ServicePilot SP Monogram</title>
+  <desc id="description">Balanced lightning-shaped S paired with a forward-slanted P. White and teal. Transparent background.</desc>
+  <g transform="translate(-23 0)">
+    <path d="M121 48 L68 111 L116 135 L65 204" fill="none" stroke="#F4F8FB" stroke-width="31" stroke-linecap="butt" stroke-linejoin="miter" stroke-miterlimit="2.6"/>
+    <path d="M138 204 L180 72 H191 C225 72 237 87 237 109 C237 134 219 149 189 149 H159" fill="none" stroke="#49D5C1" stroke-width="26" stroke-linecap="butt" stroke-linejoin="round"/>
+  </g>
+</svg>

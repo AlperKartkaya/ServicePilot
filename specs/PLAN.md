@@ -80,3 +80,13 @@ Durum: `[ ]` yapılacak · `[x]` bitti. Her görev gereksinim ID'si taşır.
 - [x] Erişim kodu, token saklama, modal ve `/auth` kaldırılması; anonim regresyonlar
 - [x] Worker secret korunarak public sensör ve otomatik canlı Pages yayını
 - [x] Yeni anonim tarayıcı oturumunda gerçek Jev doğrulaması
+
+## M11 — Kaydırmayla ilerleyen landing page [FR-23, NFR-7/9/10]
+- [x] Yerel Lenis/GSAP, özgün koyu anlatı ve tek vakanın sayfa içinde çözülmesi
+- [x] Gerçek RAEP ile sentetik sinyallerin ayrımı ve risk alternatifi
+- [x] Eski uygulama rotaları, mobil/klavye/azaltılmış hareket ve regresyon doğrulaması
+
+## M12 — Landing ve demo yayını [FR-23, NFR-9]
+- [x] Sağ üst/kapanış demo bağlantıları ve `/demo/` altında mevcut MVP
+- [x] Eski bağlantılar, asset yolları ve uygulama regresyonları
+- [ ] Commit/push, başarılı Pages workflow ve canlı iki yol doğrulaması
