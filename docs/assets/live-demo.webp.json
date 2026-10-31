@@ -1,0 +1,4 @@
+{
+  "prompt": "Sourced raster: actual 1440x960 screenshot of https://alperkartkaya.github.io/ServicePilot/demo/ captured 2026-10-31 during verified Pages release 0228975; source /tmp/servicepilot-release-demo.png. Synthetic CAN case evaluated by real anonymous Jev HTTP 200 with signal_source jev. One displayed probability and latency sample, not a benchmark. No customer data, UI reconstruction or compositing. Converted to WebP quality 94 for README; no additional model request.",
+  "createdAt": "2026-10-31T17:36:11.571Z"
+}

@@ -1,6 +1,7 @@
 # GitHub Pages + public live Jev sensor [FR-22, ADR-12]
 
-- UI: https://alperkartkaya.github.io/ServicePilot/
+- Demo UI: https://alperkartkaya.github.io/ServicePilot/demo/
+- Landing: https://alperkartkaya.github.io/ServicePilot/
 - Sensor: https://servicepilot-jev.alperkartkaya.workers.dev
 - Every visitor uses live Jev automatically for new cases and evidence. No login, access code, browser token or client API key. Old synthetic records and replay retain their original sources.
 - Worker runs fixed TypeSafe questions only. It cannot forward arbitrary URLs, models or questions. RAEP and case persistence stay in the browser; this is not a shared service backend. Existing FastAPI/SQLite remains available locally. Loopback/static development stays offline so tests do not spend provider credits.

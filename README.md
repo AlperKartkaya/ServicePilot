@@ -1,78 +1,79 @@
-# ServicePilot — Active Evidence Orchestration (BİGGVADİ MVP)
+<p align="center">
+  <img src="docs/assets/servicepilot-mark.svg" alt="ServicePilot logo" width="88">
+</p>
+<h1 align="center">ServicePilot</h1>
+<p align="center"><b>The next best evidence. The right expert. Human control.</b></p>
+<p align="center">
+  <a href="https://alperkartkaya.github.io/ServicePilot/demo/"><img alt="Try the live Jev demo" src="https://img.shields.io/badge/demo-live_Jev-2f6f73?labelColor=16201e"></a>
+  <a href="https://alperkartkaya.github.io/ServicePilot/"><img alt="Interactive landing page" src="https://img.shields.io/badge/website-scroll_story-284b63?labelColor=16201e"></a>
+  <a href="https://docs.typesafe.ai/introduction"><img alt="Powered by Jev · TypeSafe" src="https://img.shields.io/badge/powered_by-Jev_%C2%B7_TypeSafe-6e2559?labelColor=16201e"></a>
+  <img alt="Python 3.11 or newer" src="https://img.shields.io/badge/Python-3.11%2B-3776AB?logo=python&amp;logoColor=white&amp;labelColor=16201e">
+  <img alt="FastAPI backend" src="https://img.shields.io/badge/backend-FastAPI-23555a?logo=fastapi&amp;logoColor=white&amp;labelColor=16201e">
+</p>
+<p align="center">
+  <a href="https://alperkartkaya.github.io/ServicePilot/">Explore the story</a> ·
+  <a href="https://alperkartkaya.github.io/ServicePilot/demo/">Try the demo</a> ·
+  <a href="specs/ARCHITECTURE.md">Under the hood</a>
+</p>
 
-ServicePilot, eksik bir servis vakasında **sıradaki en değerli kanıtı** seçen ve yeterli kanıt oluştuğunda vakayı doğru uzmanlığa yönlendiren karar katmanıdır. Arıza teşhisi yapmaz.
+ServicePilot helps commercial-vehicle service teams turn incomplete cases into **useful evidence requests and prepared expert handoffs**. It is a decision layer, not a fault-diagnosis bot.
 
-- **Jev (TypeSafe System One)** → anlamsal sensör: tek istekte route/sufficient/critical/priority/has_* olasılıkları.
-- **RAEP (Risk-Aware Evidence Policy)** → `app/raep.py`: safety gate, hiyerarşik routing, kanıt fayda-maliyet hesabı, eskalasyon.
-- Aksiyonlar: `ROUTE` · `REQUEST_EVIDENCE` · `ESCALATE`.
+<a href="https://alperkartkaya.github.io/ServicePilot/">
+  <img src="docs/assets/landing.webp" alt="ServicePilot landing: a commercial vehicle and a scroll-driven service-case story" width="960">
+</a>
 
-## Paylaşılabilir demo
+## Jev measures. RAEP decides.
 
-[GitHub Pages — ServicePilot](https://alperkartkaya.github.io/ServicePilot/)
+[Jev](https://docs.typesafe.ai/introduction), TypeSafe's System One model, is our **semantic sensor**. Each normal decision step sends the case context and typed questions in **one parallel API request**, rather than asking a chatbot for a diagnosis.
 
-Yeni landing kaynakta hazırdır: kaydırmayla ilerleyen altı adımlı sentetik vaka, gerçek RAEP hesapları ve risk alternatifi. Ana sayfa Jev çağırmaz veya vaka saklamaz. Operasyonel MVP `demo/` yolundadır; önceki uygulama hash bağlantıları korunur. [Landing tasarım ve doğrulama rehberi](docs/LANDING.md). Landing: https://alperkartkaya.github.io/ServicePilot/ · [Demoyu dene](https://alperkartkaya.github.io/ServicePilot/demo/).
+| Jev primitive | What ServicePilot asks |
+|---|---|
+| `Choice` | Which technical specialty? → `route` probabilities |
+| `Noul` | Enough evidence? Critical risk? Check already present? → `sufficient`, `critical`, `has_*` |
+| `Score` | How urgent? → `priority` |
 
-Operasyonel MVP **her ziyaretçi için otomatik canlı Jev** kullanır; giriş veya erişim kodu istemez. Private key yalnız Cloudflare Worker'daki `TYPESAFE_API_KEY` secret'ında kalır. Jev olasılık üretir; RAEP tarayıcıda karar verir. Kayıtlar cihazda saklanır, kullanıcılar arasında paylaşılmaz. İlk temsili kayıtlar ve replay canlı modele dönüşmez. Gerçek müşteri verisi girmeyin.
+**RAEP — our Risk-Aware Evidence Policy — makes the operational decision.** It combines Jev's signals with risk thresholds and the expected value/cost of the next evidence. The R&D focus is **active evidence collection, uncertainty reduction and risk-controlled routing** — not a model wrapper.
 
-Anahtarı değiştirmek için Cloudflare → Workers & Pages → `servicepilot-jev` → Settings → Variables and Secrets: `TYPESAFE_API_KEY`, tür **Secret**, ardından Deploy. Mevcut secret korunur; site kullanıcıları anahtar girmez. Yaklaşık ortak 5/dakika/Cloudflare-konumu sınırı vardır; katı harcama tavanı değildir. Cloudflare ve Jev kullanım kotaları ayrıdır.
+## One case. A complete decision loop.
 
-`main` güncellemelerinde `.github/workflows/pages.yml` yalnız `static/` yayımlar. Worker kurulumu, limitleri, güvenli secret yönetimi ve testler: [Worker rehberi](docs/WORKER.md). `.env` hiçbir zaman Pages artifact'ına girmez.
+![Service case → safety gate → Jev typed signals → RAEP; request evidence and repeat, prepare an expert-team handoff, or escalate to a human. Known critical risk bypasses Jev.](docs/assets/decision-flow.svg)
 
-## Kurulum
+Known critical risk skips Jev. Critical signals, unresolved uncertainty or unavailable inference can also lead to a human expert. Diagnosis and repair remain the expert's job.
 
-```bash
-# .env içinde: TYPESAFE_API_KEY=...
+## See the decision, not just an answer
+
+<a href="https://alperkartkaya.github.io/ServicePilot/demo/">
+  <img src="docs/assets/live-demo.webp" alt="Operational demo: Jev probabilities on the left, RAEP's ROUTE recommendation and human confirmation on the right" width="960">
+</a>
+
+*Real UI, synthetic case, live Jev response. The displayed probability and latency are one example, not accuracy or speed benchmarks. [Capture details](docs/assets/README.md).*
+
+**Try it:** open the demo → choose **Kanıt döngüsünü dene** → add evidence if requested → inspect the decision trace → confirm or override the handoff. Live results may take a different path from the fixture story.
+
+The landing uses **fixture signals**. The hosted demo uses **live Jev** for new cases/evidence, without a login or access code; initial records and replay stay synthetic. Keys remain server-side, records stay in your browser, and public use consumes the owner's Jev quota. **Do not enter real customer data.**
+
+## Run locally
+
+Requires Python 3.11+ and [uv](https://docs.astral.sh/uv/).
+
+```sh
 uv sync
+# Add TYPESAFE_API_KEY=... to .env for live inference; never commit it.
 uv run uvicorn app.main:app --reload
-# http://localhost:8000      Landing
-# http://localhost:8000/demo/ Operasyonel MVP
-# http://localhost:8000/docs OpenAPI
-uv run pytest -q             # RAEP birim testleri
 ```
 
-## Demo akışı (≈3 dk)
+Open [the landing](http://localhost:8000/), [the demo](http://localhost:8000/demo/) or [the API docs](http://localhost:8000/docs). No frontend build step. Local API mode uses SQLite; the public demo uses browser-local storage.
 
-1. **Genel Bakış → Kanıt döngüsünü dene.** Gerçek bir vaka açılır. Jev olasılıkları ile RAEP kararı yan yana; tek sıradaki işlem görünür.
-2. **Demo yanıtını doldur → Kanıtı ekle ve değerlendir.** CAN ölçümüyle yeterlilik değişimini ve yeni kararı görün. **Yönlendirmeyi onayla** ile ekip devrini tamamlayın.
-3. Genel bakıştaki **Yönlendirme akışı** yeterli bilgi örneğini, **Güvenlik riski** Jev'den önce çalışan safety gate'i açar. Uzman kararı için ekip seçin; kritik vakada gerekçe zorunludur.
-4. Vakada **Teknik karar izi**: tüm olasılıklar, ham sinyaller, aday kanıtların `U = L·Δerr − λ·C` hesabı ve adımın politika snapshot’ı. **RAEP ve replay** üzerinden ayarı değiştirip vakada yeniden hesaplayın. Yeni Jev çağrısı yapılmaz; geçmiş ve insan ataması korunur.
-5. **Uzman İncelemesi → Ekip kuyrukları** ile devri, **RAEP ve replay → Simülasyonu çalıştır** ile 13 sentetik senaryonun gerçek politika sonuçlarını görün.
+<details>
+<summary>Tests, architecture & operator guides</summary>
 
-**Mod farkı:** FastAPI'de yeni vaka ve normal kanıt adımı canlı Jev kullanır; anahtar yoksa/hata olursa insan uzmana eskale edilir. İlk beş kayıt temsili sinyallerdir. Statik mod canlı Jev çağırmaz. Pages üzerindeki otomatik Worker bağlantısı yeni vaka ve kanıt için canlı sinyal kullanır; RAEP ve kayıtlar tarayıcıda kalır. Kaynak her karar adımında etiketlidir. API yazma hatasında sessizce yerel moda geçilmez. Canlı model sonucu hazır senaryodan farklı olabilir; demo yanıtı yalnız seçilen kanıt için mevcutsa sunulur.
-
-> Senaryolar sentetiktir; kanıt maliyetleri ve güvenilirlikleri uzman varsayımıdır. Anadolu Isuzu verisi, doğruluk veya saha tasarrufu iddiası değildir. ProEye bir devir hedefidir; canlı entegrasyon değildir.
-
-## Doğrulama
-
-```bash
-uv run pytest -q                    # Python politika/API; her test geçici DB kullanır
-node --test tests/test_frontend.mjs tests/test_landing.mjs tests/test_worker.mjs # Bağımlılıksız yerel JS politika/yaşam döngüsü
-node --check static/app.js
+```sh
+uv run pytest -q
+node --test tests/test_frontend.mjs tests/test_landing.mjs tests/test_worker.mjs
 ```
 
-Gerçek Chromium akışı (Playwright yalnız test ortamına eklenir, uygulama bağımlılığı değildir):
-```bash
-# Terminal 1 — statik demo
-python3 -m http.server 5187 --bind 127.0.0.1 --directory static
-# Terminal 2
-uv run --with playwright python tests/browser_smoke.py
+[Requirements](specs/REQUIREMENTS.md) · [Architecture](specs/ARCHITECTURE.md) · [Worker & secrets](docs/WORKER.md) · [Landing & browser checks](docs/LANDING.md) · [Validation evidence](docs/VALIDATION.md) · [Reference coding](docs/REFERENCE_CODING.md)
 
-# API arayüz testi: geçici SQLite + açıkça etiketli fixture; gerçek Jev çağrılmaz.
-uv run python tests/serve_browser_fixture.py
-# Ayrı terminal
-uv run --with playwright python tests/browser_smoke.py --api-fixture --url http://127.0.0.1:5188
-```
-Chromium kurulu değilse test ortamında `uv run --with playwright playwright install chromium` gerekir. Browser testi yalnız disposable loopback sunucular içindir; fixture API'deki demo kayıtlarını sıfırlar. Canlı sunucuya karşı çalıştırmayın.
+</details>
 
-Tasarım kararları: [operasyonel arayüz](DESIGN.md), [landing](docs/landing/DESIGN.md). XERJ kurulumu, iki referans repo, sorgular ve beş skill: [referans kodlama](docs/REFERENCE_CODING.md). Kontrol kapsamı: [doğrulama kaydı](docs/VALIDATION.md).
-
-## Yapı
-
-```text
-app/        main.py (API) · raep.py (politika) · jev.py (Jev istemcisi) · catalog.py · scenarios.py · store.py (SQLite)
-static/     index.html · landing.* · demo/index.html · app.html (eski bağlantı) · app.js · style.css · yerel vendor/assets (build yok)
-specs/      PRD · REQUIREMENTS · ARCHITECTURE · API_SPEC · PLAN · DECISIONS
-tests/      Python/JS regresyonları · Chromium smoke · izole API fixture
-```
-
-Geliştirme spec-driven yürür: önce `specs/`, sonra kod. Bkz. `AGENTS.md`.
+**Scope:** today's MVP evaluates text/JSON; photo previews are not image analysis. Multimodal evidence and an Anadolu Isuzu PoC are product goals, not shipped analysis or a completed partnership. Scenario costs are assumptions; no field savings or accuracy claim.

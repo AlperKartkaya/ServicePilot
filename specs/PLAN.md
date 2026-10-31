@@ -90,3 +90,13 @@ Durum: `[ ]` yapılacak · `[x]` bitti. Her görev gereksinim ID'si taşır.
 - [x] Sağ üst/kapanış demo bağlantıları ve `/demo/` altında mevcut MVP
 - [x] Eski bağlantılar, asset yolları ve uygulama regresyonları
 - [x] Commit/push, başarılı Pages workflow ve canlı iki yol doğrulaması
+
+## M13 — Görsel README [NFR-11, FR-21/22/23]
+- [x] FlightBench/izge düzeniyle logo, rozet, gerçek ekran görüntüleri ve kısa Jev açıklaması
+- [x] Oklarla takip edilen SVG: safety gate, Jev, RAEP, üç aksiyon ve kanıt döngüsü
+- [x] Görsel render, bağlantı/asset ve ürün gerçeği doğrulaması
+
+## M14 — Üretilebilir mimari görselleri [NFR-11]
+- [x] RAEP formüllerini Typst kaynağı ve SVG renderlarıyla sunma; politika matematiğini koruma
+- [x] Mimari akışları Mermaid ile sunma; README SVG’sini olduğu gibi koruma
+- [x] Render/bağlantı doğrulaması ve yalnız ilgili dokümantasyonu commit/push

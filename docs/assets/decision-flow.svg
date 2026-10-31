@@ -1,0 +1,74 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 804" role="img" aria-labelledby="title desc">
+  <title id="title">ServicePilot — the evidence-to-expert loop</title>
+  <desc id="desc">Step one: collect technician notes, DTCs, vehicle context and evidence. Step two: check deterministic safety rules; known critical risk goes directly to a human, bypassing Jev. Step three: one Jev request returns typed route, sufficiency, risk, evidence-presence and priority signals. Step four: RAEP combines signals, thresholds and expected evidence value and cost. Request the next useful evidence and repeat from the updated case; prepare a route for human confirmation; or escalate to a human on risk, unresolved uncertainty or unavailable inference. The expert owns diagnosis and repair.</desc>
+  <defs>
+    <marker id="next" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="m1 1 8 4-8 4" fill="none" stroke="#86e1c4" stroke-width="1.6"/></marker>
+    <marker id="human" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="m1 1 8 4-8 4" fill="none" stroke="#f3a291" stroke-width="1.6"/></marker>
+  </defs>
+  <rect width="1200" height="804" rx="20" fill="#080c0e"/>
+  <g font-family="Segoe UI, Arial, sans-serif">
+    <text x="44" y="48" fill="#f2f4ed" font-size="28" font-weight="650">From a service note to the next useful action.</text>
+    <text x="44" y="78" fill="#a0afa9" font-size="16">Jev produces the signals. ServicePilot retains the decision.</text>
+
+    <!-- Known risk takes the outside lane, without passing through the sensor. -->
+    <path d="M455 146V110H1178V605H1150" fill="none" stroke="#f3a291" stroke-width="2.2" stroke-dasharray="7 6" marker-end="url(#human)"/>
+    <text x="710" y="101" fill="#f3a291" font-size="15">Known critical risk → directly to a human</text>
+
+    <g fill="#10191b" stroke="#293735" stroke-width="1.5">
+      <rect x="44" y="146" width="254" height="204" rx="10"/>
+      <rect x="328" y="146" width="254" height="204" rx="10"/>
+      <rect x="612" y="146" width="254" height="204" rx="10" stroke="#557c6d"/>
+      <rect x="896" y="146" width="254" height="204" rx="10" stroke="#557c6d"/>
+    </g>
+    <g fill="#86e1c4" font-size="15" font-weight="650">
+      <text x="66" y="178">01</text><text x="350" y="178">02</text><text x="634" y="178">03</text><text x="918" y="178">04</text>
+    </g>
+    <g fill="#f2f4ed" font-size="23" font-weight="650">
+      <text x="66" y="213">Case context</text><text x="350" y="213">Safety gate</text>
+      <text x="634" y="213">Jev · TypeSafe</text><text x="918" y="213">RAEP policy</text>
+    </g>
+    <g fill="#a0afa9" font-size="16">
+      <text x="66" y="250">Technician note + DTCs</text><text x="66" y="279">Vehicle + recent repairs</text><text x="66" y="308">Collected evidence</text>
+      <text x="350" y="250">Deterministic safety rules</text><text x="350" y="279">Risk found? Human first.</text><text x="350" y="308">No rule hit? Ask Jev.</text>
+      <text x="634" y="243" font-size="14">One request · parallel questions</text>
+      <text x="634" y="274">Choice · specialty</text><text x="634" y="300">Noul · enough? risk? present?</text><text x="634" y="326">Score · urgency</text>
+      <text x="918" y="250">Signals + risk thresholds</text><text x="918" y="279">Evidence value − cost</text><text x="918" y="308">One operational action</text>
+    </g>
+    <g fill="none" stroke="#86e1c4" stroke-width="2.2" marker-end="url(#next)">
+      <path d="M298 248H325"/><path d="M582 248H609"/><path d="M866 248H893"/>
+    </g>
+
+    <!-- All three actions are policy outcomes; Jev does not directly route a case. -->
+    <path d="M1023 350V404" fill="none" stroke="#86e1c4" stroke-width="2.2"/>
+    <circle cx="1023" cy="404" r="4" fill="#86e1c4"/>
+    <g fill="none" stroke="#86e1c4" stroke-width="2.2" marker-end="url(#next)">
+      <path d="M1023 404H209V518"/><path d="M599 404V518"/>
+    </g>
+    <path d="M1023 404V518" fill="none" stroke="#f3a291" stroke-width="2.2" marker-end="url(#human)"/>
+    <g font-size="14" fill="#a0afa9">
+      <text x="225" y="474">A useful check remains</text>
+      <text x="615" y="474">A supported expert-team route</text>
+      <text x="1007" y="456" text-anchor="end">Risk, uncertainty or</text>
+      <text x="1007" y="478" text-anchor="end">unavailable inference</text>
+    </g>
+    <g fill="#10191b" stroke="#293735" stroke-width="1.5">
+      <rect x="44" y="518" width="330" height="178" rx="10"/>
+      <rect x="434" y="518" width="330" height="178" rx="10"/>
+      <rect x="824" y="518" width="326" height="178" rx="10" stroke="#694b41"/>
+    </g>
+    <g font-family="ui-monospace, Consolas, monospace" font-size="18" font-weight="650">
+      <text x="66" y="553" fill="#86e1c4">REQUEST_EVIDENCE</text><text x="456" y="553" fill="#86e1c4">ROUTE</text><text x="846" y="553" fill="#f3a291">ESCALATE</text>
+    </g>
+    <g fill="#f2f4ed" font-size="21" font-weight="600">
+      <text x="66" y="593">Ask the next best check.</text><text x="456" y="593">Prepare the expert handoff.</text><text x="846" y="593">Bring in a human.</text>
+    </g>
+    <g fill="#a0afa9" font-size="16">
+      <text x="66" y="628">Technician adds the result.</text><text x="66" y="655">Update the case; evaluate again.</text>
+      <text x="456" y="628">Context + evidence + reasoning.</text><text x="456" y="655">Human confirms or overrides.</text>
+      <text x="846" y="628">Expert desk / ProEye target.</text><text x="846" y="655">No risky field-test detour.</text>
+    </g>
+    <path d="M209 696V729H23V248H43" fill="none" stroke="#86e1c4" stroke-width="2.2" marker-end="url(#next)"/>
+    <text x="66" y="754" fill="#86e1c4" font-size="16">New evidence → the same safety + sensor + policy loop</text>
+    <text x="44" y="786" fill="#a0afa9" font-size="14">Not diagnosis. Not a chatbot. Probabilities are not accuracy; evidence costs are assumptions. Experts own repair decisions.</text>
+  </g>
+</svg>

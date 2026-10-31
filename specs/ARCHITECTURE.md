@@ -2,17 +2,18 @@
 
 ## 1. Bileşenler
 
-```text
-static/ (index.html, app.js, style.css)      Tarayıcı UI, build yok
-        │  fetch /api/*
-        ▼
-app/main.py      FastAPI: HTTP uçları, vaka yaşam döngüsü, replay
-app/store.py     SQLite (stdlib) — vaka JSON blob + ayarlar
-app/jev.py       TypeSafe System One istemcisi (semantic sensor)
-app/raep.py      Risk-Aware Evidence Policy — saf fonksiyonlar (Ar-Ge çekirdeği)
-app/catalog.py   Uzmanlık taksonomisi, kanıt kataloğu, safety kuralları, varsayılan ayarlar
-app/scenarios.py Demo / replay senaryoları (beklenen route + kanıt cevapları)
+```mermaid
+flowchart TD
+  UI["static/demo/ + app.js + style.css<br/>Tarayıcı UI · build yok"] -->|fetch /api/*| API["app/main.py<br/>FastAPI · vaka yaşam döngüsü · replay"]
+  API --> STORE["app/store.py<br/>SQLite · vakalar + ayarlar"]
+  API --> JEV["app/jev.py<br/>Jev / TypeSafe · semantic sensor"]
+  API --> RAEP["app/raep.py<br/>RAEP · saf karar fonksiyonları"]
+  CATALOG["app/catalog.py<br/>Taksonomi · kanıt · safety · ayarlar"] --> JEV
+  CATALOG --> RAEP
+  SCENARIOS["app/scenarios.py<br/>Demo / replay senaryoları"] --> API
 ```
+
+Bu diyagram yerel FastAPI yoludur; Pages + Worker yolu belgenin sonunda açıklanır.
 
 Jev'i başka bir typed-decision modeliyle değiştirmek = `app/jev.py`'yi değiştirmek. RAEP yalnız `signals` sözlüğünü görür (bkz. ADR-3).
 
@@ -52,30 +53,31 @@ Hepsi aynı state üzerinde paralel, tek round-trip. Gecikme canlı adımda öl�
 
 Notasyon: yaprak olasılıkları `p_l` (Jev `route`), `p_crit` (Jev `critical`).
 
-**Düğüm olasılığı:** `P(n) = Σ_{l ∈ leaves(n)} p_l`.
+**Düğüm olasılığı, mevcut hata, kayıp ağırlığı ve risk:**
 
-**Mevcut hata:** `err(s) = 1 − max_l p_l`.
+![P(n) = sum of p_l over leaves(n); err(s) = 1 − max_l p_l; L(s) = 1 + w_crit × p_crit; R(s) = L(s) × err(s).](../docs/assets/raep-formula-1.svg)
 
-**Kayıp ağırlığı:** `L(s) = 1 + w_crit · p_crit` — kritik vakada yanlış otomasyon olağan misroute'tan pahalıdır.
+Kritik vakada yanlış otomasyon olağan misroute'tan pahalıdır.
 
-**Risk:** `R(s) = L(s) · err(s)`.
-
-**Kanıt modeli (partition + reliability):** Her kanıt `e`, bir yaprak kümesi `S_e` hakkında bilgi verir ve güvenilirliği `ρ_e`'dir. Kanıt toplandığında `ρ_e` olasılıkla bilgilendiricidir: gerçek yaprağın `S_e` içinde olup olmadığı öğrenilir, içindeyse yaprak tam belirlenir. `1 − ρ_e` olasılıkla hiçbir şey değişmez.
+**Kanıt modeli (partition + reliability):** Her kanıt `e`, bir yaprak kümesi `𝒮_e` hakkında bilgi verir ve güvenilirliği `ρ_e`'dir. Kanıt toplandığında `ρ_e` olasılıkla bilgilendiricidir: gerçek yaprağın `𝒮_e` içinde olup olmadığı öğrenilir, içindeyse yaprak tam belirlenir. `1 − ρ_e` olasılıkla hiçbir şey değişmez.
 
 Beklenen sonraki hata:
 
-```
-err_inf  = Σ_{l∉S_e} p_l − max_{l∉S_e} p_l
-err'(e)  = ρ_e · err_inf + (1 − ρ_e) · err(s)
-```
+![err_inf = sum of p_l outside 𝒮_e minus the largest p_l outside 𝒮_e; err′(e) = ρ_e × err_inf + (1 − ρ_e) × err(s).](../docs/assets/raep-formula-2.svg)
 
-**Maliyet:** `C(e) = α·T_e + β·E_e + γ·S_e` (T: dakika, E: efor 1–5, S: güvenlik/operasyon 0–5). Katalog değerleri **uzman varsayımıdır**.
+Küme dışında yaprak yoksa toplam ve maksimum `0` alınır (`app/raep.py: expected_err`). `𝒮_e` yaprak kümesidir; aşağıdaki `S_e` ise sayısal güvenlik/operasyon maliyetidir.
 
-**Fayda:** `U(e) = L(s) · (err(s) − err'(e)) − λ · C(e)`.
+**Maliyet ve net fayda:**
+
+![C(e) = α × T_e + β × E_e + γ × S_e; U(e) = L(s) × (err(s) − err′(e)) − λ × C(e).](../docs/assets/raep-formula-3.svg)
+
+`T`: dakika, `E`: efor 1–5, `S`: güvenlik/operasyon 0–5. Katalog değerleri **uzman varsayımıdır**.
 
 En yüksek `U > 0` kanıt istenir. Hiçbiri pozitif değilse hiyerarşik fallback (FR-7).
 
 **Aday filtreleri:** toplanmış kanıt; `has_<id> ≥ 0.7`; `requires_ev` ve araç elektrikli değil; `dtc_scan` ve vakada DTC var.
+
+Görseller [Typst kaynağından](../docs/assets/raep-formulas.typ) üretilir; [yeniden üretim komutları](../docs/assets/README.md#regenerate). Politika matematiği değişmemiştir.
 
 ## 5. Baseline'lar (replay, FR-13)
 

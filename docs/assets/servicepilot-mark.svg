@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 288 288" role="img" aria-labelledby="title desc">
+  <title id="title">ServicePilot</title>
+  <desc id="desc">Original ServicePilot SP monogram on a midnight background, readable on light and dark GitHub themes.</desc>
+  <rect width="288" height="288" rx="52" fill="#080c0e"/>
+  <g transform="translate(16 16)">
+    <g transform="translate(-23 0)">
+    <path d="M121 48 L68 111 L116 135 L65 204" fill="none" stroke="#F4F8FB" stroke-width="31" stroke-linecap="butt" stroke-linejoin="miter" stroke-miterlimit="2.6"/>
+    <path d="M138 204 L180 72 H191 C225 72 237 87 237 109 C237 134 219 149 189 149 H159" fill="none" stroke="#49D5C1" stroke-width="26" stroke-linecap="butt" stroke-linejoin="round"/>
+  </g>
+  </g>
+</svg>
