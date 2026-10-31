@@ -89,4 +89,4 @@ Durum: `[ ]` yapılacak · `[x]` bitti. Her görev gereksinim ID'si taşır.
 ## M12 — Landing ve demo yayını [FR-23, NFR-9]
 - [x] Sağ üst/kapanış demo bağlantıları ve `/demo/` altında mevcut MVP
 - [x] Eski bağlantılar, asset yolları ve uygulama regresyonları
-- [ ] Commit/push, başarılı Pages workflow ve canlı iki yol doğrulaması
+- [x] Commit/push, başarılı Pages workflow ve canlı iki yol doğrulaması

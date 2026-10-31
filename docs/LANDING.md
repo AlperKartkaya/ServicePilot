@@ -34,3 +34,5 @@ uv run --with playwright python tests/browser_jev_smoke.py
 ```
 
 Browser fixtures/mocked provider responses do not establish live Jev availability, deployment or field performance. Screenshot artifacts are ignored under `.impeccable/review/`.
+
+Published at the root with demo at `/ServicePilot/demo/`; successful release and real anonymous Jev check are recorded in [VALIDATION.md](VALIDATION.md#scroll-landing-and-demo-path-release--2026-10-31-fr-23-nfr-910).

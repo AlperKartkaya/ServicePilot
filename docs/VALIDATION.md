@@ -73,3 +73,14 @@ Supersedes the opt-in/auth parts of the preceding release: the user explicitly w
 - [Successful Pages run](https://github.com/AlperKartkaya/ServicePilot/actions/runs/41059410504), commit `01b6a9d`. Public HTML/JS/CSS hash-match source. No access-code modal/password field; a new context starts with empty sessionStorage and already shows live mode.
 - Real public Chromium issued evidence and new-case requests without Authorization, received HTTP 200 / `signal_source:jev`, confirmed the actual RAEP route, reloaded successfully and preserved history. Evidence-call sample 145 ms is one observation, not a performance claim. Recompute and fire safety made no provider call. No uncaught JS errors/overflow at 390/768/1440 px.
 - Screenshots inspected: `/tmp/servicepilot-public-live-desktop.png`, `/tmp/servicepilot-public-live-mobile.png`. No real customer/shared-server data touched. Existing TypeSafe secret value was not changed.
+
+
+## Scroll landing and demo-path release — 2026-10-31 [FR-23, NFR-9/10]
+- Published source: `02289758a3d8a5e6f737ef1e93200606ff8e59b3`; [Pages run 41223321809](https://github.com/AlperKartkaya/ServicePilot/actions/runs/41223321809) completed successfully.
+- [Landing](https://alperkartkaya.github.io/ServicePilot/) and [operational demo](https://alperkartkaya.github.io/ServicePilot/demo/) return HTTP 200. Bare `/demo` redirects to `/demo/`. Eight deployed entrypoint/JS/CSS assets hash-match source.
+- Top-right and closing “Demoyu dene” links open the existing MVP. Its HTML is unchanged apart from parent-relative stylesheet/module paths; policy, provider, storage keys and origin remain unchanged. Root app hashes and `app.html` preserve query/hash while redirecting to `demo/`.
+- Local: 24 Node tests, 23 Python tests, JS syntax and first-party whitespace checks pass. One existing Starlette/httpx deprecation warning; upstream font license/GSAP distribution whitespace retained as supplied. Static, isolated API-fixture and mocked-public-Jev Chromium browser suites pass.
+- Live Chromium: both CTAs, old root hashes, old `app.html` query/hash and 390/768/1440px layouts pass; no uncaught JS errors. Navigating back to the landing does not modify existing origin-local records and makes no inference request.
+- One synthetic CAN case from `/demo/` received real anonymous Jev HTTP 200, `signal_source:jev`, one sample 144 ms (not a benchmark); no browser Authorization header. Critical-fire case bypassed inference. No shared database or real customer data was used.
+- Landing alone computes actual RAEP from fixture signals. No performance, calibration, partner approval, field/device or complete accessibility certification claim. Cloudflare Worker/secrets were not changed or redeployed.
+- Review screenshots remain local under `.impeccable/review/` and `/tmp/servicepilot-release-*.png`. Existing unrelated `.gitignore` and root logo files were left outside the commit.
