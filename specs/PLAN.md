@@ -116,4 +116,4 @@ M14/M15’in Mermaid sürümleri bu adımda özel SVG/PNG ile değiştirilmişti
 
 ## M17 — Onaylı başlık ve dokümantasyon yayını [FR-23, NFR-9/10/11]
 - [x] Son tipografi, README görseli ve mimari kaynak/render regresyon kontrolü
-- [ ] İlgili değişiklikleri commit/push; başarılı Pages workflow ve canlı başlık/demo yolu doğrulaması
+- [x] İlgili değişiklikleri commit/push; başarılı Pages workflow ve canlı başlık/demo yolu doğrulaması
